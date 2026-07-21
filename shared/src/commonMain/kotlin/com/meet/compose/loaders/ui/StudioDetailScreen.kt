@@ -3,6 +3,7 @@ package com.meet.compose.loaders.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -51,8 +52,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.meet.compose.loaders.PixelLoader
 import com.meet.compose.loaders.export.CodeExporter
+import com.meet.compose.loaders.export.SvgExporter
 import com.meet.compose.loaders.model.PixelGridSize
 import com.meet.compose.loaders.model.PixelPreset
+
+enum class ExportFormat { KOTLIN_CODE, SVG_VECTOR }
+
+private fun Color.toHexString(): String {
+    val r = (red * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
+    val g = (green * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
+    val b = (blue * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
+    return "#${r}${g}${b}".uppercase()
+}
 
 @Composable
 fun StudioDetailScreen(
@@ -79,6 +90,7 @@ fun StudioDetailScreen(
     var loaderSize by remember { mutableStateOf(48.dp) }
     var speedMultiplier by remember { mutableStateOf(1.0f) }
     var isPlaying by remember { mutableStateOf(true) }
+    var exportFormat by remember { mutableStateOf(ExportFormat.KOTLIN_CODE) }
 
     var activeColorTarget by remember { mutableStateOf<ColorPickerTarget?>(null) }
 
@@ -192,6 +204,16 @@ fun StudioDetailScreen(
                 .weight(1f)
         ) {
             val isCompact = maxWidth < 600.dp
+
+            val currentAnimation = preset.selectAnimation(selectedGridSize)
+            val generatedCode = CodeExporter.generateCode(preset, selectedGridSize, loaderSize.value.toInt(), speedMultiplier)
+            val generatedSvg = SvgExporter.exportAnimatedSvg(
+                animation = currentAnimation,
+                activeHex = selectedActiveColor.toHexString(),
+                inactiveHex = selectedInactiveColor.toHexString(),
+                speedMultiplier = speedMultiplier
+            )
+            val activeExportText = if (exportFormat == ExportFormat.KOTLIN_CODE) generatedCode else generatedSvg
 
             if (isCompact) {
                 // Mobile Portrait Layout: Scrollable Vertical Column
@@ -352,59 +374,82 @@ fun StudioDetailScreen(
                             }
                         }
 
-                        // Source Code Section
-                        val generatedCode = CodeExporter.generateCode(preset, selectedGridSize, loaderSize.value.toInt(), speedMultiplier)
+                        // Export Format & Code Section
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OptionBadge(
+                                        label = "Kotlin Code",
+                                        isSelected = exportFormat == ExportFormat.KOTLIN_CODE
+                                    ) {
+                                        exportFormat = ExportFormat.KOTLIN_CODE
+                                        isCopied = false
+                                    }
+                                    OptionBadge(
+                                        label = "SVG Vector",
+                                        isSelected = exportFormat == ExportFormat.SVG_VECTOR
+                                    ) {
+                                        exportFormat = ExportFormat.SVG_VECTOR
+                                        isCopied = false
+                                    }
+                                }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Source Code", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
+                                        .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            clipboardManager.setText(AnnotatedString(activeExportText))
+                                            isCopied = true
+                                        }
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = if (isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                                            contentDescription = "Copy",
+                                            tint = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isCopied) "Copied!" else if (exportFormat == ExportFormat.KOTLIN_CODE) "Copy Code" else "Copy SVG",
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
 
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
-                                    .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
-                                    .clickable {
-                                        clipboardManager.setText(AnnotatedString(generatedCode))
-                                        isCopied = true
-                                    }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    .fillMaxWidth()
+                                    .height(140.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .border(1.dp, outlineColor, RoundedCornerShape(8.dp))
+                                    .padding(12.dp)
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = if (isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
-                                        contentDescription = "Copy",
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(rememberScrollState())
+                                        .horizontalScroll(rememberScrollState())
+                                ) {
                                     Text(
-                                        text = if (isCopied) "Copied!" else "Copy Code",
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
+                                        text = activeExportText,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        fontSize = 11.sp,
+                                        fontFamily = FontFamily.Monospace
                                     )
                                 }
                             }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.background)
-                                .border(1.dp, outlineColor, RoundedCornerShape(8.dp))
-                                .padding(14.dp)
-                        ) {
-                            Text(
-                                text = generatedCode,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 12.sp,
-                                fontFamily = FontFamily.Monospace
-                            )
                         }
                     }
                 }
@@ -566,58 +611,82 @@ fun StudioDetailScreen(
                             }
                         }
 
-                        val generatedCode = CodeExporter.generateCode(preset, selectedGridSize, loaderSize.value.toInt(), speedMultiplier)
+                        // Export Format & Code Section
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OptionBadge(
+                                        label = "Kotlin Code",
+                                        isSelected = exportFormat == ExportFormat.KOTLIN_CODE
+                                    ) {
+                                        exportFormat = ExportFormat.KOTLIN_CODE
+                                        isCopied = false
+                                    }
+                                    OptionBadge(
+                                        label = "SVG Vector",
+                                        isSelected = exportFormat == ExportFormat.SVG_VECTOR
+                                    ) {
+                                        exportFormat = ExportFormat.SVG_VECTOR
+                                        isCopied = false
+                                    }
+                                }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Source Code", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
+                                        .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            clipboardManager.setText(AnnotatedString(activeExportText))
+                                            isCopied = true
+                                        }
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = if (isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                                            contentDescription = "Copy",
+                                            tint = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isCopied) "Copied!" else if (exportFormat == ExportFormat.KOTLIN_CODE) "Copy Code" else "Copy SVG",
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
 
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
-                                    .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
-                                    .clickable {
-                                        clipboardManager.setText(AnnotatedString(generatedCode))
-                                        isCopied = true
-                                    }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    .fillMaxWidth()
+                                    .height(140.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .border(1.dp, outlineColor, RoundedCornerShape(8.dp))
+                                    .padding(12.dp)
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = if (isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
-                                        contentDescription = "Copy",
-                                        tint = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(rememberScrollState())
+                                        .horizontalScroll(rememberScrollState())
+                                ) {
                                     Text(
-                                        text = if (isCopied) "Copied!" else "Copy Code",
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
+                                        text = activeExportText,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        fontSize = 11.sp,
+                                        fontFamily = FontFamily.Monospace
                                     )
                                 }
                             }
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.background)
-                                .border(1.dp, outlineColor, RoundedCornerShape(8.dp))
-                                .padding(14.dp)
-                        ) {
-                            Text(
-                                text = generatedCode,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 12.sp,
-                                fontFamily = FontFamily.Monospace
-                            )
                         }
                     }
                 }

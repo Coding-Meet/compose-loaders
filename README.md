@@ -150,20 +150,30 @@ fun CustomLoaderExample() {
 
 ---
 
-### 5. Exporting Frames to SVG
+### 5. Exporting Frames & Animated Vector SVGs
 
-Export animation frames directly to vector SVG strings:
+Export a single static frame or a full multi-frame **Animated SVG** with CSS `@keyframes` logic:
 
 ```kotlin
 import com.meet.compose.loaders.export.SvgExporter
 import com.meet.compose.loaders.presets.PixelPresets
 
-val svgString = SvgExporter.exportFrameToSvg(
+// Static Single Frame SVG
+val staticSvg = SvgExporter.exportFrameToSvg(
     animation = PixelPresets.Framer.grid5x5,
     frameIndex = 0,
     activeHex = "#6366F1",
     inactiveHex = "#18181B",
     canvasSize = 200
+)
+
+// Full Multi-Frame Animated SVG (with CSS @keyframes)
+val animatedSvg = SvgExporter.exportAnimatedSvg(
+    animation = PixelPresets.Framer.grid5x5,
+    activeHex = "#6366F1",
+    inactiveHex = "#18181B",
+    canvasSize = 200,
+    speedMultiplier = 1.0f
 )
 ```
 
