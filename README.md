@@ -232,6 +232,16 @@ Run demo applications across platforms using Gradle commands:
 
 ---
 
+## 🙏 Inspiration
+
+Compose Loaders is inspired by the design philosophy of [Flicker by Laurie](https://flicker.laurie.fyi/gallery).
+
+This library is an independent Jetpack Compose Multiplatform implementation built specifically for the Compose ecosystem.
+
+It is **not affiliated with, endorsed by, or maintained by the Flicker project or its author**.
+
+---
+
 ## 📄 License
 
 ```
@@ -252,7 +262,7 @@ copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIMBBLE FOR ANY CLAIM, DAMAGES OR OTHER
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
