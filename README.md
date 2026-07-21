@@ -242,6 +242,12 @@ It is **not affiliated with, endorsed by, or maintained by the Flicker project o
 
 ---
 
+## 👨‍💻 Author
+
+Built with ❤️ by **Meet** — [codingmeet.com](https://codingmeet.com/)
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
