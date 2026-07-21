@@ -33,5 +33,6 @@ plugins {
 
 include(":androidApp")
 include(":desktopApp")
+include(":loaders")
 include(":shared")
 include(":webApp")
