@@ -431,10 +431,10 @@ fun colorToValue(color: Color): Float {
 }
 
 private fun colorToHex(color: Color): String {
-    val r = (color.red * 255).toInt().coerceIn(0, 255)
-    val g = (color.green * 255).toInt().coerceIn(0, 255)
-    val b = (color.blue * 255).toInt().coerceIn(0, 255)
-    return "#%02X%02X%02X".format(r, g, b)
+    val r = (color.red * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
+    val g = (color.green * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
+    val b = (color.blue * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
+    return "#${r}${g}${b}".uppercase()
 }
 
 private fun parseHexColor(hex: String): Color? {
