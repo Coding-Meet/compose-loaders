@@ -31,6 +31,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,24 +60,20 @@ fun GalleryScreen(
     onSelectPreset: (PixelPreset) -> Unit,
 ) {
     val viewModel = viewModel<GalleryViewModel> { GalleryViewModel() }
+    val uiState by viewModel.uiState.collectAsState()
     val outlineColor = MaterialTheme.colorScheme.outline
     val defaultCanvasBg = MaterialTheme.colorScheme.background
 
-    androidx.compose.runtime.LaunchedEffect(outlineColor, defaultCanvasBg) {
-        if (viewModel.selectedInactiveColor == Color.Unspecified) {
-            viewModel.selectedInactiveColor = outlineColor
-        }
-        if (viewModel.selectedCanvasBgColor == Color.Unspecified) {
-            viewModel.selectedCanvasBgColor = defaultCanvasBg
-        }
+    LaunchedEffect(outlineColor, defaultCanvasBg) {
+        viewModel.onIntent(GalleryIntent.InitializeDefaultColors(outlineColor, defaultCanvasBg))
     }
 
     // Color Picker Dialog
-    viewModel.activeColorTarget?.let { target ->
+    uiState.activeColorTarget?.let { target ->
         val initial = when (target) {
-            ColorPickerTarget.ON_COLOR -> viewModel.customActiveColor ?: Color(0xFFEC4899)
-            ColorPickerTarget.OFF_COLOR -> viewModel.customInactiveColor ?: Color(0xFF27272A)
-            ColorPickerTarget.CANVAS_BG -> viewModel.customCanvasBgColor ?: Color(0xFF0F172A)
+            ColorPickerTarget.ON_COLOR -> uiState.customActiveColor ?: Color(0xFFEC4899)
+            ColorPickerTarget.OFF_COLOR -> uiState.customInactiveColor ?: Color(0xFF27272A)
+            ColorPickerTarget.CANVAS_BG -> uiState.customCanvasBgColor ?: Color(0xFF0F172A)
         }
         val title = when (target) {
             ColorPickerTarget.ON_COLOR -> "Pick Custom ON Color"
@@ -87,22 +86,17 @@ fun GalleryScreen(
             onColorSelected = { selected ->
                 when (target) {
                     ColorPickerTarget.ON_COLOR -> {
-                        viewModel.customActiveColor = selected
-                        viewModel.selectedActiveColor = selected
+                        viewModel.onIntent(GalleryIntent.UpdateCustomActiveColor(selected))
                     }
-
                     ColorPickerTarget.OFF_COLOR -> {
-                        viewModel.customInactiveColor = selected
-                        viewModel.selectedInactiveColor = selected
+                        viewModel.onIntent(GalleryIntent.UpdateCustomInactiveColor(selected))
                     }
-
                     ColorPickerTarget.CANVAS_BG -> {
-                        viewModel.customCanvasBgColor = selected
-                        viewModel.selectedCanvasBgColor = selected
+                        viewModel.onIntent(GalleryIntent.UpdateCustomCanvasBgColor(selected))
                     }
                 }
             },
-            onDismissRequest = { viewModel.activeColorTarget = null }
+            onDismissRequest = { viewModel.onIntent(GalleryIntent.CloseColorPicker) }
         )
     }
 
@@ -206,33 +200,35 @@ fun GalleryScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                "ON:",
+                                text = "ON:",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium
                             )
-                            val staticOnColors =
-                                listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B))
+                            val staticOnColors = listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B))
                             staticOnColors.forEach { color ->
                                 ColorSwatch(
                                     color = color,
-                                    isSelected = viewModel.selectedActiveColor == color,
+                                    isSelected = uiState.selectedActiveColor == color,
                                     outlineColor = outlineColor,
                                     size = 22.dp
-                                ) { viewModel.selectedActiveColor = color }
+                                ) { viewModel.onIntent(GalleryIntent.SelectActiveColor(color)) }
                             }
+                            val activeVal = uiState.customActiveColor
                             DynamicCustomColorSwatch(
-                                customColor = viewModel.customActiveColor,
-                                isSelected = viewModel.selectedActiveColor == viewModel.customActiveColor && viewModel.customActiveColor != null,
+                                customColor = activeVal,
+                                isSelected = uiState.selectedActiveColor == activeVal,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
                                 onSelect = {
-                                    if (viewModel.customActiveColor != null) viewModel.selectedActiveColor =
-                                        viewModel.customActiveColor!! else viewModel.activeColorTarget =
-                                        ColorPickerTarget.ON_COLOR
+                                    if (activeVal != null) {
+                                        viewModel.onIntent(GalleryIntent.SelectActiveColor(activeVal))
+                                    } else {
+                                        viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.ON_COLOR))
+                                    }
                                 },
                                 onEdit = {
-                                    viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR
+                                    viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.ON_COLOR))
                                 }
                             )
                         }
@@ -243,33 +239,35 @@ fun GalleryScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                "OFF:",
+                                text = "OFF:",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium
                             )
-                            val staticOffColors =
-                                listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7))
+                            val staticOffColors = listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7))
                             staticOffColors.forEach { color ->
                                 ColorSwatch(
                                     color = color,
-                                    isSelected = viewModel.selectedInactiveColor == color,
+                                    isSelected = uiState.selectedInactiveColor == color,
                                     outlineColor = outlineColor,
                                     size = 22.dp
-                                ) { viewModel.selectedInactiveColor = color }
+                                ) { viewModel.onIntent(GalleryIntent.SelectInactiveColor(color)) }
                             }
+                            val inactiveVal = uiState.customInactiveColor
                             DynamicCustomColorSwatch(
-                                customColor = viewModel.customInactiveColor,
-                                isSelected = viewModel.selectedInactiveColor == viewModel.customInactiveColor && viewModel.customInactiveColor != null,
+                                customColor = inactiveVal,
+                                isSelected = uiState.selectedInactiveColor == inactiveVal,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
                                 onSelect = {
-                                    if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor =
-                                        viewModel.customInactiveColor!! else viewModel.activeColorTarget =
-                                        ColorPickerTarget.OFF_COLOR
+                                    if (inactiveVal != null) {
+                                        viewModel.onIntent(GalleryIntent.SelectInactiveColor(inactiveVal))
+                                    } else {
+                                        viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.OFF_COLOR))
+                                    }
                                 },
                                 onEdit = {
-                                    viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR
+                                    viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.OFF_COLOR))
                                 }
                             )
                         }
@@ -286,33 +284,35 @@ fun GalleryScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                "BG:",
+                                text = "BG:",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium
                             )
-                            val staticBgColors =
-                                listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A))
+                            val staticBgColors = listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A))
                             staticBgColors.forEach { color ->
                                 ColorSwatch(
                                     color = color,
-                                    isSelected = viewModel.selectedCanvasBgColor == color,
+                                    isSelected = uiState.selectedCanvasBgColor == color,
                                     outlineColor = outlineColor,
                                     size = 22.dp
-                                ) { viewModel.selectedCanvasBgColor = color }
+                                ) { viewModel.onIntent(GalleryIntent.SelectCanvasBgColor(color)) }
                             }
+                            val canvasBgVal = uiState.customCanvasBgColor
                             DynamicCustomColorSwatch(
-                                customColor = viewModel.customCanvasBgColor,
-                                isSelected = viewModel.selectedCanvasBgColor == viewModel.customCanvasBgColor && viewModel.customCanvasBgColor != null,
+                                customColor = canvasBgVal,
+                                isSelected = uiState.selectedCanvasBgColor == canvasBgVal,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
                                 onSelect = {
-                                    if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor =
-                                        viewModel.customCanvasBgColor!! else viewModel.activeColorTarget =
-                                        ColorPickerTarget.CANVAS_BG
+                                    if (canvasBgVal != null) {
+                                        viewModel.onIntent(GalleryIntent.SelectCanvasBgColor(canvasBgVal))
+                                    } else {
+                                        viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.CANVAS_BG))
+                                    }
                                 },
                                 onEdit = {
-                                    viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG
+                                    viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.CANVAS_BG))
                                 }
                             )
                         }
@@ -323,7 +323,7 @@ fun GalleryScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                "Speed:",
+                                text = "Speed:",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium
@@ -331,8 +331,8 @@ fun GalleryScreen(
                             listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
                                 FilterChip(
                                     label = "${speed}x",
-                                    isSelected = viewModel.globalSpeed == speed
-                                ) { viewModel.globalSpeed = speed }
+                                    isSelected = uiState.globalSpeed == speed
+                                ) { viewModel.onIntent(GalleryIntent.UpdateGlobalSpeed(speed)) }
                             }
                         }
                     }
@@ -353,35 +353,34 @@ fun GalleryScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                "ON Color:",
+                                text = "ON Color:",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
-                            listOf(
-                                Color(0xFF6366F1),
-                                Color(0xFF10B981),
-                                Color(0xFFF59E0B)
-                            ).forEach { color ->
+                            listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B)).forEach { color ->
                                 ColorSwatch(
                                     color = color,
-                                    isSelected = viewModel.selectedActiveColor == color,
+                                    isSelected = uiState.selectedActiveColor == color,
                                     outlineColor = outlineColor,
                                     size = 22.dp
-                                ) { viewModel.selectedActiveColor = color }
+                                ) { viewModel.onIntent(GalleryIntent.SelectActiveColor(color)) }
                             }
+                            val activeVal = uiState.customActiveColor
                             DynamicCustomColorSwatch(
-                                customColor = viewModel.customActiveColor,
-                                isSelected = viewModel.selectedActiveColor == viewModel.customActiveColor && viewModel.customActiveColor != null,
+                                customColor = activeVal,
+                                isSelected = uiState.selectedActiveColor == activeVal,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
                                 onSelect = {
-                                    if (viewModel.customActiveColor != null) viewModel.selectedActiveColor =
-                                        viewModel.customActiveColor!! else viewModel.activeColorTarget =
-                                        ColorPickerTarget.ON_COLOR
+                                    if (activeVal != null) {
+                                        viewModel.onIntent(GalleryIntent.SelectActiveColor(activeVal))
+                                    } else {
+                                        viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.ON_COLOR))
+                                    }
                                 },
                                 onEdit = {
-                                    viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR
+                                    viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.ON_COLOR))
                                 }
                             )
                         }
@@ -391,35 +390,34 @@ fun GalleryScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                "OFF Color:",
+                                text = "OFF Color:",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
-                            listOf(
-                                outlineColor,
-                                Color(0xFF18181B),
-                                Color(0xFFE4E4E7)
-                            ).forEach { color ->
+                            listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7)).forEach { color ->
                                 ColorSwatch(
                                     color = color,
-                                    isSelected = viewModel.selectedInactiveColor == color,
+                                    isSelected = uiState.selectedInactiveColor == color,
                                     outlineColor = outlineColor,
                                     size = 22.dp
-                                ) { viewModel.selectedInactiveColor = color }
+                                ) { viewModel.onIntent(GalleryIntent.SelectInactiveColor(color)) }
                             }
+                            val inactiveVal = uiState.customInactiveColor
                             DynamicCustomColorSwatch(
-                                customColor = viewModel.customInactiveColor,
-                                isSelected = viewModel.selectedInactiveColor == viewModel.customInactiveColor && viewModel.customInactiveColor != null,
+                                customColor = inactiveVal,
+                                isSelected = uiState.selectedInactiveColor == inactiveVal,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
                                 onSelect = {
-                                    if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor =
-                                        viewModel.customInactiveColor!! else viewModel.activeColorTarget =
-                                        ColorPickerTarget.OFF_COLOR
+                                    if (inactiveVal != null) {
+                                        viewModel.onIntent(GalleryIntent.SelectInactiveColor(inactiveVal))
+                                    } else {
+                                        viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.OFF_COLOR))
+                                    }
                                 },
                                 onEdit = {
-                                    viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR
+                                    viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.OFF_COLOR))
                                 }
                             )
                         }
@@ -429,35 +427,34 @@ fun GalleryScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                "Canvas BG:",
+                                text = "Canvas BG:",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
-                            listOf(
-                                defaultCanvasBg,
-                                Color(0xFF000000),
-                                Color(0xFF0F172A)
-                            ).forEach { color ->
+                            listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A)).forEach { color ->
                                 ColorSwatch(
                                     color = color,
-                                    isSelected = viewModel.selectedCanvasBgColor == color,
+                                    isSelected = uiState.selectedCanvasBgColor == color,
                                     outlineColor = outlineColor,
                                     size = 22.dp
-                                ) { viewModel.selectedCanvasBgColor = color }
+                                ) { viewModel.onIntent(GalleryIntent.SelectCanvasBgColor(color)) }
                             }
+                            val canvasBgVal = uiState.customCanvasBgColor
                             DynamicCustomColorSwatch(
-                                customColor = viewModel.customCanvasBgColor,
-                                isSelected = viewModel.selectedCanvasBgColor == viewModel.customCanvasBgColor && viewModel.customCanvasBgColor != null,
+                                customColor = canvasBgVal,
+                                isSelected = uiState.selectedCanvasBgColor == canvasBgVal,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
                                 onSelect = {
-                                    if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor =
-                                        viewModel.customCanvasBgColor!! else viewModel.activeColorTarget =
-                                        ColorPickerTarget.CANVAS_BG
+                                    if (canvasBgVal != null) {
+                                        viewModel.onIntent(GalleryIntent.SelectCanvasBgColor(canvasBgVal))
+                                    } else {
+                                        viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.CANVAS_BG))
+                                    }
                                 },
                                 onEdit = {
-                                    viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG
+                                    viewModel.onIntent(GalleryIntent.OpenColorPicker(ColorPickerTarget.CANVAS_BG))
                                 }
                             )
                         }
@@ -468,7 +465,7 @@ fun GalleryScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            "Speed:",
+                            text = "Speed:",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -476,8 +473,8 @@ fun GalleryScreen(
                         listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
                             FilterChip(
                                 label = "${speed}x",
-                                isSelected = viewModel.globalSpeed == speed
-                            ) { viewModel.globalSpeed = speed }
+                                isSelected = uiState.globalSpeed == speed
+                            ) { viewModel.onIntent(GalleryIntent.UpdateGlobalSpeed(speed)) }
                         }
                     }
                 }
@@ -493,13 +490,13 @@ fun GalleryScreen(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            items(viewModel.presets) { preset ->
+            items(uiState.presets) { preset ->
                 PresetGalleryCard(
                     preset = preset,
-                    activeColor = viewModel.selectedActiveColor,
-                    inactiveColor = viewModel.selectedInactiveColor,
-                    canvasBgColor = viewModel.selectedCanvasBgColor,
-                    speedMultiplier = viewModel.globalSpeed,
+                    activeColor = uiState.selectedActiveColor,
+                    inactiveColor = uiState.selectedInactiveColor,
+                    canvasBgColor = uiState.selectedCanvasBgColor,
+                    speedMultiplier = uiState.globalSpeed,
                     onClick = { onSelectPreset(preset) }
                 )
             }

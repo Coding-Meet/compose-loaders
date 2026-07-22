@@ -34,6 +34,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -76,18 +79,14 @@ fun StudioDetailScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onBack: () -> Unit,
+    viewModel: StudioDetailViewModel = viewModel { StudioDetailViewModel() }
 ) {
-    val viewModel = viewModel<StudioDetailViewModel> { StudioDetailViewModel() }
     val outlineColor = MaterialTheme.colorScheme.outline
     val defaultCanvasBg = MaterialTheme.colorScheme.background
+    val uiState by viewModel.uiState.collectAsState()
 
-    androidx.compose.runtime.LaunchedEffect(outlineColor, defaultCanvasBg) {
-        if (viewModel.selectedInactiveColor == Color.Unspecified) {
-            viewModel.selectedInactiveColor = outlineColor
-        }
-        if (viewModel.selectedCanvasBgColor == Color.Unspecified) {
-            viewModel.selectedCanvasBgColor = defaultCanvasBg
-        }
+    LaunchedEffect(outlineColor, defaultCanvasBg) {
+        viewModel.onIntent(StudioDetailIntent.InitializeDefaultColors(outlineColor, defaultCanvasBg))
     }
 
     @Suppress("DEPRECATION")
@@ -106,11 +105,11 @@ fun StudioDetailScreen(
     """.trimIndent()
 
     // Color Picker Dialog Modal
-    viewModel.activeColorTarget?.let { target ->
+    uiState.activeColorTarget?.let { target ->
         val initial = when (target) {
-            ColorPickerTarget.ON_COLOR -> viewModel.customActiveColor ?: Color(0xFFEC4899)
-            ColorPickerTarget.OFF_COLOR -> viewModel.customInactiveColor ?: Color(0xFF27272A)
-            ColorPickerTarget.CANVAS_BG -> viewModel.customCanvasBgColor ?: Color(0xFF0F172A)
+            ColorPickerTarget.ON_COLOR -> uiState.customActiveColor ?: Color(0xFFEC4899)
+            ColorPickerTarget.OFF_COLOR -> uiState.customInactiveColor ?: Color(0xFF27272A)
+            ColorPickerTarget.CANVAS_BG -> uiState.customCanvasBgColor ?: Color(0xFF0F172A)
         }
         val title = when (target) {
             ColorPickerTarget.ON_COLOR -> "Pick Custom ON Color"
@@ -123,22 +122,17 @@ fun StudioDetailScreen(
             onColorSelected = { selected ->
                 when (target) {
                     ColorPickerTarget.ON_COLOR -> {
-                        viewModel.customActiveColor = selected
-                        viewModel.selectedActiveColor = selected
+                        viewModel.onIntent(StudioDetailIntent.UpdateCustomActiveColor(selected))
                     }
-
                     ColorPickerTarget.OFF_COLOR -> {
-                        viewModel.customInactiveColor = selected
-                        viewModel.selectedInactiveColor = selected
+                        viewModel.onIntent(StudioDetailIntent.UpdateCustomInactiveColor(selected))
                     }
-
                     ColorPickerTarget.CANVAS_BG -> {
-                        viewModel.customCanvasBgColor = selected
-                        viewModel.selectedCanvasBgColor = selected
+                        viewModel.onIntent(StudioDetailIntent.UpdateCustomCanvasBgColor(selected))
                     }
                 }
             },
-            onDismissRequest = { viewModel.activeColorTarget = null }
+            onDismissRequest = { viewModel.onIntent(StudioDetailIntent.CloseColorPicker) }
         )
     }
 
@@ -214,99 +208,76 @@ fun StudioDetailScreen(
         ) {
             val isCompact = maxWidth < 600.dp
 
-            val currentAnimation = preset.selectAnimation(viewModel.selectedGridSize)
-            val generatedCode = CodeExporter.generateCode(
-                preset,
-                viewModel.selectedGridSize,
-                viewModel.loaderSize.value.toInt(),
-                viewModel.speedMultiplier,
-                viewModel.selectedPixelShape
-            )
+            val currentAnimation = preset.selectAnimation(uiState.selectedGridSize)
+            val generatedCode = CodeExporter.generateCode(preset, uiState.selectedGridSize, uiState.loaderSize.value.toInt(), uiState.speedMultiplier, uiState.selectedPixelShape)
             val generatedSvg = SvgExporter.exportAnimatedSvg(
                 animation = currentAnimation,
-                activeHex = viewModel.selectedActiveColor.toHexString(),
-                inactiveHex = viewModel.selectedInactiveColor.toHexString(),
-                speedMultiplier = viewModel.speedMultiplier,
-                shape = viewModel.selectedPixelShape
+                activeHex = uiState.selectedActiveColor.toHexString(),
+                inactiveHex = uiState.selectedInactiveColor.toHexString(),
+                speedMultiplier = uiState.speedMultiplier,
+                shape = uiState.selectedPixelShape
             )
-            val activeExportText =
-                if (viewModel.exportFormat == ExportFormat.KOTLIN_CODE) generatedCode else generatedSvg
+            val activeExportText = if (uiState.exportFormat == ExportFormat.KOTLIN_CODE) generatedCode else generatedSvg
 
             // -------------------------------------------------------------
             // REUSABLE SECTIONS (MovableContent)
             // -------------------------------------------------------------
 
-            val gridSizeSelector = remember(viewModel.selectedGridSize) {
+            val gridSizeSelector = remember(uiState.selectedGridSize) {
                 movableContentOf {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        GridSizeOptionButton(
-                            label = "5×5",
-                            isSelected = viewModel.selectedGridSize == PixelGridSize.Grid5x5
-                        ) { viewModel.selectedGridSize = PixelGridSize.Grid5x5 }
-                        GridSizeOptionButton(
-                            label = "7×7",
-                            isSelected = viewModel.selectedGridSize == PixelGridSize.Grid7x7
-                        ) { viewModel.selectedGridSize = PixelGridSize.Grid7x7 }
+                        GridSizeOptionButton(label = "5×5", isSelected = uiState.selectedGridSize == PixelGridSize.Grid5x5) { viewModel.onIntent(StudioDetailIntent.SelectGridSize(PixelGridSize.Grid5x5)) }
+                        GridSizeOptionButton(label = "7×7", isSelected = uiState.selectedGridSize == PixelGridSize.Grid7x7) { viewModel.onIntent(StudioDetailIntent.SelectGridSize(PixelGridSize.Grid7x7)) }
                     }
                 }
             }
 
-            val previewCanvas = remember(
-                preset,
-                viewModel.selectedGridSize,
-                viewModel.loaderSize,
-                viewModel.selectedActiveColor,
-                viewModel.selectedInactiveColor,
-                viewModel.selectedPixelShape,
-                viewModel.isPlaying,
-                viewModel.speedMultiplier,
-                viewModel.selectedCanvasBgColor
-            ) {
+            val previewCanvas = remember(preset, uiState.selectedGridSize, uiState.loaderSize, uiState.selectedActiveColor, uiState.selectedInactiveColor, uiState.selectedPixelShape, uiState.isPlaying, uiState.speedMultiplier, uiState.selectedCanvasBgColor) {
                 movableContentOf { isComp: Boolean ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(if (isComp) 220.dp else 280.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(viewModel.selectedCanvasBgColor),
+                            .background(uiState.selectedCanvasBgColor),
                         contentAlignment = Alignment.Center
                     ) {
                         PixelLoader(
                             preset = preset,
-                            gridSize = viewModel.selectedGridSize,
-                            modifier = Modifier.size(viewModel.loaderSize),
-                            color = viewModel.selectedActiveColor,
-                            inactiveColor = viewModel.selectedInactiveColor,
-                            shape = viewModel.selectedPixelShape,
-                            speedMultiplier = if (viewModel.isPlaying) viewModel.speedMultiplier else 0.001f
+                            gridSize = uiState.selectedGridSize,
+                            modifier = Modifier.size(uiState.loaderSize),
+                            color = uiState.selectedActiveColor,
+                            inactiveColor = uiState.selectedInactiveColor,
+                            shape = uiState.selectedPixelShape,
+                            speedMultiplier = if (uiState.isPlaying) uiState.speedMultiplier else 0.001f
                         )
                     }
                 }
             }
 
-            val playPauseControls = remember(viewModel.isPlaying) {
+            val playPauseControls = remember(uiState.isPlaying) {
                 movableContentOf {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .border(1.dp, outlineColor, RoundedCornerShape(10.dp))
-                            .clickable { viewModel.isPlaying = !viewModel.isPlaying }
+                            .clickable { viewModel.onIntent(StudioDetailIntent.UpdateIsPlaying(!uiState.isPlaying)) }
                             .padding(horizontal = 20.dp, vertical = 10.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = if (viewModel.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                imageVector = if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                                 contentDescription = "Play/Pause",
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (viewModel.isPlaying) "Pause" else "Play Animation",
+                                text = if (uiState.isPlaying) "Pause" else "Play Animation",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
@@ -316,128 +287,81 @@ fun StudioDetailScreen(
                 }
             }
 
-            val colorControls = remember(
-                viewModel.selectedActiveColor,
-                viewModel.customActiveColor,
-                viewModel.selectedInactiveColor,
-                viewModel.customInactiveColor,
-                viewModel.selectedCanvasBgColor,
-                viewModel.customCanvasBgColor,
-                outlineColor,
-                defaultCanvasBg
-            ) {
+            val colorControls = remember(uiState.selectedActiveColor, uiState.customActiveColor, uiState.selectedInactiveColor, uiState.customInactiveColor, uiState.selectedCanvasBgColor, uiState.customCanvasBgColor, outlineColor, defaultCanvasBg) {
                 movableContentOf {
+                    val activeVal = uiState.customActiveColor
+                    val inactiveVal = uiState.customInactiveColor
+                    val canvasBgVal = uiState.customCanvasBgColor
+
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         // ON Color
                         Column {
-                            Text(
-                                "Active Color (ON)",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
+                            Text("Active Color (ON)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(6.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                listOf(
-                                    Color(0xFF6366F1),
-                                    Color(0xFF10B981),
-                                    Color(0xFFF59E0B)
-                                ).forEach { c ->
-                                    ColorSwatch(
-                                        color = c,
-                                        isSelected = viewModel.selectedActiveColor == c
-                                    ) { viewModel.selectedActiveColor = c }
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B)).forEach { c ->
+                                    ColorSwatch(color = c, isSelected = uiState.selectedActiveColor == c) { viewModel.onIntent(StudioDetailIntent.SelectActiveColor(c)) }
                                 }
                                 DynamicCustomColorSwatch(
-                                    customColor = viewModel.customActiveColor,
-                                    isSelected = viewModel.selectedActiveColor == viewModel.customActiveColor && viewModel.customActiveColor != null,
+                                    customColor = activeVal,
+                                    isSelected = uiState.selectedActiveColor == activeVal,
                                     outlineColor = outlineColor,
                                     onSelect = {
-                                        if (viewModel.customActiveColor != null) viewModel.selectedActiveColor =
-                                            viewModel.customActiveColor!! else viewModel.activeColorTarget =
-                                            ColorPickerTarget.ON_COLOR
+                                        if (activeVal != null) {
+                                            viewModel.onIntent(StudioDetailIntent.SelectActiveColor(activeVal))
+                                        } else {
+                                            viewModel.onIntent(StudioDetailIntent.OpenColorPicker(ColorPickerTarget.ON_COLOR))
+                                        }
                                     },
-                                    onEdit = {
-                                        viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR
-                                    }
+                                    onEdit = { viewModel.onIntent(StudioDetailIntent.OpenColorPicker(ColorPickerTarget.ON_COLOR)) }
                                 )
                             }
                         }
 
                         // OFF Color
                         Column {
-                            Text(
-                                "Inactive Color (OFF)",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
+                            Text("Inactive Color (OFF)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(6.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                listOf(
-                                    outlineColor,
-                                    Color(0xFF18181B),
-                                    Color(0xFFE4E4E7)
-                                ).forEach { c ->
-                                    ColorSwatch(
-                                        color = c,
-                                        isSelected = viewModel.selectedInactiveColor == c
-                                    ) { viewModel.selectedInactiveColor = c }
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7)).forEach { c ->
+                                    ColorSwatch(color = c, isSelected = uiState.selectedInactiveColor == c) { viewModel.onIntent(StudioDetailIntent.SelectInactiveColor(c)) }
                                 }
                                 DynamicCustomColorSwatch(
-                                    customColor = viewModel.customInactiveColor,
-                                    isSelected = viewModel.selectedInactiveColor == viewModel.customInactiveColor && viewModel.customInactiveColor != null,
+                                    customColor = inactiveVal,
+                                    isSelected = uiState.selectedInactiveColor == inactiveVal,
                                     outlineColor = outlineColor,
                                     onSelect = {
-                                        if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor =
-                                            viewModel.customInactiveColor!! else viewModel.activeColorTarget =
-                                            ColorPickerTarget.OFF_COLOR
+                                        if (inactiveVal != null) {
+                                            viewModel.onIntent(StudioDetailIntent.SelectInactiveColor(inactiveVal))
+                                        } else {
+                                            viewModel.onIntent(StudioDetailIntent.OpenColorPicker(ColorPickerTarget.OFF_COLOR))
+                                        }
                                     },
-                                    onEdit = {
-                                        viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR
-                                    }
+                                    onEdit = { viewModel.onIntent(StudioDetailIntent.OpenColorPicker(ColorPickerTarget.OFF_COLOR)) }
                                 )
                             }
                         }
 
                         // Canvas BG
                         Column {
-                            Text(
-                                "Canvas BG",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
+                            Text("Canvas BG", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(6.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                listOf(
-                                    defaultCanvasBg,
-                                    Color(0xFF000000),
-                                    Color(0xFF0F172A)
-                                ).forEach { c ->
-                                    ColorSwatch(
-                                        color = c,
-                                        isSelected = viewModel.selectedCanvasBgColor == c
-                                    ) { viewModel.selectedCanvasBgColor = c }
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A)).forEach { c ->
+                                    ColorSwatch(color = c, isSelected = uiState.selectedCanvasBgColor == c) { viewModel.onIntent(StudioDetailIntent.SelectCanvasBgColor(c)) }
                                 }
                                 DynamicCustomColorSwatch(
-                                    customColor = viewModel.customCanvasBgColor,
-                                    isSelected = viewModel.selectedCanvasBgColor == viewModel.customCanvasBgColor && viewModel.customCanvasBgColor != null,
+                                    customColor = canvasBgVal,
+                                    isSelected = uiState.selectedCanvasBgColor == canvasBgVal,
                                     outlineColor = outlineColor,
                                     onSelect = {
-                                        if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor =
-                                            viewModel.customCanvasBgColor!! else viewModel.activeColorTarget =
-                                            ColorPickerTarget.CANVAS_BG
+                                        if (canvasBgVal != null) {
+                                            viewModel.onIntent(StudioDetailIntent.SelectCanvasBgColor(canvasBgVal))
+                                        } else {
+                                            viewModel.onIntent(StudioDetailIntent.OpenColorPicker(ColorPickerTarget.CANVAS_BG))
+                                        }
                                     },
-                                    onEdit = {
-                                        viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG
-                                    }
+                                    onEdit = { viewModel.onIntent(StudioDetailIntent.OpenColorPicker(ColorPickerTarget.CANVAS_BG)) }
                                 )
                             }
                         }
@@ -445,82 +369,46 @@ fun StudioDetailScreen(
                 }
             }
 
-            val configControls = remember(
-                viewModel.loaderSize,
-                viewModel.speedMultiplier,
-                viewModel.selectedPixelShape
-            ) {
+            val configControls = remember(uiState.loaderSize, uiState.speedMultiplier, uiState.selectedPixelShape) {
                 movableContentOf {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         // Size
                         Column {
-                            Text(
-                                "Size",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
+                            Text("Size", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 listOf(24.dp, 36.dp, 48.dp, 64.dp).forEach { s ->
-                                    OptionBadge(
-                                        label = "${s.value.toInt()}dp",
-                                        isSelected = viewModel.loaderSize == s
-                                    ) { viewModel.loaderSize = s }
+                                    OptionBadge(label = "${s.value.toInt()}dp", isSelected = uiState.loaderSize == s) { viewModel.onIntent(StudioDetailIntent.UpdateLoaderSize(s)) }
                                 }
                             }
                         }
 
                         // Speed
                         Column {
-                            Text(
-                                "Speed Multiplier",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
+                            Text("Speed Multiplier", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { spd ->
-                                    OptionBadge(
-                                        label = "${spd}x",
-                                        isSelected = viewModel.speedMultiplier == spd
-                                    ) { viewModel.speedMultiplier = spd }
+                                    OptionBadge(label = "${spd}x", isSelected = uiState.speedMultiplier == spd) { viewModel.onIntent(StudioDetailIntent.UpdateSpeedMultiplier(spd)) }
                                 }
                             }
                         }
 
                         // Shape
                         Column {
-                            Text(
-                                "Pixel Shape",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
+                            Text("Pixel Shape", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                OptionBadge(
-                                    label = "Circle",
-                                    isSelected = viewModel.selectedPixelShape == PixelShape.Circle
-                                ) { viewModel.selectedPixelShape = PixelShape.Circle }
-                                OptionBadge(
-                                    label = "Square",
-                                    isSelected = viewModel.selectedPixelShape == PixelShape.Square
-                                ) { viewModel.selectedPixelShape = PixelShape.Square }
-                                OptionBadge(
-                                    label = "Rounded",
-                                    isSelected = viewModel.selectedPixelShape == PixelShape.RoundedSquare
-                                ) { viewModel.selectedPixelShape = PixelShape.RoundedSquare }
+                                OptionBadge(label = "Circle", isSelected = uiState.selectedPixelShape == PixelShape.Circle) { viewModel.onIntent(StudioDetailIntent.UpdatePixelShape(PixelShape.Circle)) }
+                                OptionBadge(label = "Square", isSelected = uiState.selectedPixelShape == PixelShape.Square) { viewModel.onIntent(StudioDetailIntent.UpdatePixelShape(PixelShape.Square)) }
+                                OptionBadge(label = "Rounded", isSelected = uiState.selectedPixelShape == PixelShape.RoundedSquare) { viewModel.onIntent(StudioDetailIntent.UpdatePixelShape(PixelShape.RoundedSquare)) }
                             }
                         }
                     }
                 }
             }
 
-            val exportSection = remember(
-                viewModel.exportFormat,
-                viewModel.isCopied,
-                viewModel.isDependencyCopied,
-                dependencySetupText
-            ) {
+            val exportSection = remember(uiState.exportFormat, uiState.isCopied, uiState.isDependencyCopied, dependencySetupText) {
                 movableContentOf { activeText: String ->
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         // Dependency Setup Banner
@@ -546,32 +434,24 @@ fun StudioDetailScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(6.dp))
-                                        .background(
-                                            if (viewModel.isDependencyCopied) Color(
-                                                0xFF10B981
-                                            ) else MaterialTheme.colorScheme.surfaceVariant
-                                        )
+                                        .background(if (uiState.isDependencyCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
                                         .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
                                         .clickable {
-                                            clipboardManager.setText(
-                                                AnnotatedString(
-                                                    dependencySetupText
-                                                )
-                                            )
-                                            viewModel.isDependencyCopied = true
+                                            clipboardManager.setText(AnnotatedString(dependencySetupText))
+                                            viewModel.onIntent(StudioDetailIntent.SetDependencyCopied(true))
                                         }
                                         .padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
-                                            imageVector = if (viewModel.isDependencyCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                                            imageVector = if (uiState.isDependencyCopied) Icons.Default.Check else Icons.Default.ContentCopy,
                                             contentDescription = "Copy Setup",
                                             tint = MaterialTheme.colorScheme.onSurface,
                                             modifier = Modifier.size(12.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = if (viewModel.isDependencyCopied) "Copied!" else "Copy Setup",
+                                            text = if (uiState.isDependencyCopied) "Copied!" else "Copy Setup",
                                             color = MaterialTheme.colorScheme.onSurface,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Medium
@@ -616,41 +496,39 @@ fun StudioDetailScreen(
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 OptionBadge(
                                     label = "Kotlin Code",
-                                    isSelected = viewModel.exportFormat == ExportFormat.KOTLIN_CODE
+                                    isSelected = uiState.exportFormat == ExportFormat.KOTLIN_CODE
                                 ) {
-                                    viewModel.exportFormat = ExportFormat.KOTLIN_CODE
-                                    viewModel.isCopied = false
+                                    viewModel.onIntent(StudioDetailIntent.UpdateExportFormat(ExportFormat.KOTLIN_CODE))
                                 }
                                 OptionBadge(
                                     label = "SVG Vector",
-                                    isSelected = viewModel.exportFormat == ExportFormat.SVG_VECTOR
+                                    isSelected = uiState.exportFormat == ExportFormat.SVG_VECTOR
                                 ) {
-                                    viewModel.exportFormat = ExportFormat.SVG_VECTOR
-                                    viewModel.isCopied = false
+                                    viewModel.onIntent(StudioDetailIntent.UpdateExportFormat(ExportFormat.SVG_VECTOR))
                                 }
                             }
 
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(if (viewModel.isCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
+                                    .background(if (uiState.isCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
                                     .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
                                     .clickable {
                                         clipboardManager.setText(AnnotatedString(activeText))
-                                        viewModel.isCopied = true
+                                        viewModel.onIntent(StudioDetailIntent.SetCopied(true))
                                     }
                                     .padding(horizontal = 10.dp, vertical = 6.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
-                                        imageVector = if (viewModel.isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                                        imageVector = if (uiState.isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
                                         contentDescription = "Copy",
                                         tint = MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = if (viewModel.isCopied) "Copied!" else if (viewModel.exportFormat == ExportFormat.KOTLIN_CODE) "Copy Code" else "Copy SVG",
+                                        text = if (uiState.isCopied) "Copied!" else if (uiState.exportFormat == ExportFormat.KOTLIN_CODE) "Copy Code" else "Copy SVG",
                                         color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium
