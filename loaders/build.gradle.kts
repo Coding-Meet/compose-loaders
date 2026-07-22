@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 kotlin {
@@ -51,3 +52,37 @@ kotlin {
         }
     }
 }
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    coordinates("io.github.coding-meet", "compose-loaders", "1.0.0")
+
+
+    pom {
+        name = "Compose Loaders"
+        description = "A growing collection of handcrafted pixel loading animations for Compose Multiplatform."
+        inceptionYear = "2026"
+        url = "https://github.com/Coding-Meet/compose-loaders"
+        licenses {
+            license {
+                name = "The MIT License"
+                url = "https://opensource.org/licenses/MIT"
+                distribution = "repo"
+            }
+        }
+        developers {
+            developer {
+                id = "Coding-Meet"
+                name = "Meet"
+                url = "https://github.com/Coding-Meet"
+            }
+        }
+        scm {
+            url = "https://github.com/Coding-Meet/compose-loaders"
+            connection = "scm:git:git://github.com/Coding-Meet/compose-loaders.git"
+            developerConnection = "scm:git:ssh://github.com/Coding-Meet/compose-loaders.git"
+        }
+    }
+}
+

@@ -3,7 +3,7 @@
 [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF.svg?logo=kotlin)](https://kotlinlang.org/docs/multiplatform.html)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose-Multiplatform-blue.svg?logo=jetbrains)](https://www.jetbrains.com/lp/compose-multiplatform/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Maven Central](https://img.shields.io/maven-central/v/com.meet.compose/loaders.svg?label=Maven%20Central)](https://search.maven.org/artifact/com.meet.compose/loaders)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.coding-meet/compose-loaders.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.coding-meet/compose-loaders)
 [![Live Demo](https://img.shields.io/badge/Live-Demo-0A84FF?style=flat&logo=googlechrome&logoColor=white)](https://coding-meet.github.io/compose-loaders/)
 
 **Compose Loaders** is a lightweight, customizable, open-source **Compose Multiplatform (KMP)** library with a growing collection of handcrafted pixel loading animations across Android, iOS, Desktop (JVM), and Web (Wasm/JS).
@@ -39,7 +39,7 @@ Add the dependency to your multiplatform module's `build.gradle.kts`:
 ```kotlin
 commonMain.dependencies {
     // Core Compose Loaders Library
-    implementation("com.meet.compose:loaders:1.0.0")
+    implementation("io.github.coding-meet:compose-loaders:1.0.0")
 }
 ```
 
@@ -227,10 +227,10 @@ com.meet.compose.loaders
 
 Run demo applications across platforms using Gradle commands:
 
-- **Android App**: `./gradlew :androidApp:assembleDebug`
-- **Desktop (JVM)**: `./gradlew :desktopApp:run`
-- **Web (Wasm)**: `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-- **Web (JS)**: `./gradlew :webApp:jsBrowserDevelopmentRun`
+- **Android App**: `./gradlew :samples:androidApp:assembleDebug`
+- **Desktop (JVM)**: `./gradlew :samples:desktopApp:run`
+- **Web (Wasm)**: `./gradlew :samples:webApp:wasmJsBrowserDevelopmentRun`
+- **Web (JS)**: `./gradlew :samples:webApp:jsBrowserDevelopmentRun`
 
 ---
 

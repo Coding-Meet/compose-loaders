@@ -1,9 +1,9 @@
 # Showcase App Architecture
 
-The showcase app within the `:shared` module is structured cleanly into screen-specific feature subfolders following an MVI (Model-View-Intent) architecture:
+The showcase app within the `:samples:shared` module is structured cleanly into screen-specific feature subfolders following an MVI (Model-View-Intent) architecture:
 
 ```
-shared/src/commonMain/kotlin/com/meet/compose/loaders/ui
+samples/shared/src/commonMain/kotlin/com/meet/compose/loaders/ui
 ├── App.kt                          # Main App layout and Navigation
 │
 ├── common/                         # Shared UI Components across screens
