@@ -96,7 +96,28 @@ internal object BasicPresets {
         grid7x7 = ClassicLoadingFrames.grid7x7
     )
 
+    val Crosshair = PixelPreset(
+        id = "crosshair",
+        name = "Crosshair",
+        grid5x5 = CrosshairFrames.grid5x5,
+        grid7x7 = CrosshairFrames.grid7x7
+    )
+
+    val Scanner = PixelPreset(
+        id = "scanner",
+        name = "Scanner",
+        grid5x5 = ScannerFrames.grid5x5,
+        grid7x7 = ScannerFrames.grid7x7
+    )
+
+    val Eclipse = PixelPreset(
+        id = "eclipse",
+        name = "Eclipse",
+        grid5x5 = EclipseFrames.grid5x5,
+        grid7x7 = EclipseFrames.grid7x7
+    )
+
     val list: List<PixelPreset> = listOf(
-        Framer, Gradient, Target, Unboxing, DotDotDot, TinySpinner, Loading, Importing, Searching, Busy, Saving, Initialising, ClassicLoading
+        Framer, Gradient, Target, Unboxing, DotDotDot, TinySpinner, Loading, Importing, Searching, Busy, Saving, Initialising, ClassicLoading, Crosshair, Scanner, Eclipse
     )
 }

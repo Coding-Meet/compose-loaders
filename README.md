@@ -185,10 +185,10 @@ val animatedSvg = SvgExporter.exportAnimatedSvg(
 
 | Category | Presets |
 | :--- | :--- |
-| **Basic UI** | `Framer`, `Gradient`, `Target`, `Unboxing`, `DotDotDot`, `TinySpinner`, `Loading`, `Importing`, `Searching`, `Busy`, `Saving`, `Initialising`, `ClassicLoading` |
-| **Motion & Physics** | `Newton`, `Bounce`, `Syncing`, `Ripple`, `RollingDice`, `Tumbleweed`, `TheGreatWave` |
-| **Tech & Digital** | `Rocket`, `Comet`, `Infinite`, `BarChart`, `Flash`, `LoadingGraph`, `LoadingGIFs` |
-| **Retro & Gaming** | `TheClaw`, `Galaxy`, `Sleepy`, `Pacman` |
+| **Basic UI** | `Framer`, `Gradient`, `Target`, `Unboxing`, `DotDotDot`, `TinySpinner`, `Loading`, `Importing`, `Searching`, `Busy`, `Saving`, `Initialising`, `ClassicLoading`, `Crosshair`, `Scanner`, `Eclipse` |
+| **Motion & Physics** | `Newton`, `Bounce`, `Syncing`, `Ripple`, `RollingDice`, `Tumbleweed`, `TheGreatWave`, `Heartbeat`, `Radar`, `Fire`, `PulseGrid`, `Windmill`, `Tornado`, `Sandglass` |
+| **Tech & Digital** | `Rocket`, `Comet`, `Infinite`, `BarChart`, `Flash`, `LoadingGraph`, `LoadingGIFs`, `DNA`, `Matrix`, `InfinityWave`, `Helix`, `DigitalRain`, `Equalizer` |
+| **Retro & Gaming** | `TheClaw`, `Galaxy`, `Sleepy`, `Pacman`, `PingPong`, `PacLoop`, `Snake`, `Tetris` |
 
 ---
 

@@ -54,7 +54,56 @@ internal object MotionPresets {
         grid7x7 = TheGreatWaveFrames.grid7x7
     )
 
+    val Heartbeat = PixelPreset(
+        id = "heartbeat",
+        name = "Heartbeat",
+        grid5x5 = HeartbeatFrames.grid5x5,
+        grid7x7 = HeartbeatFrames.grid7x7
+    )
+
+    val Radar = PixelPreset(
+        id = "radar",
+        name = "Radar",
+        grid5x5 = RadarFrames.grid5x5,
+        grid7x7 = RadarFrames.grid7x7
+    )
+
+    val Fire = PixelPreset(
+        id = "fire",
+        name = "Fire",
+        grid5x5 = FireFrames.grid5x5,
+        grid7x7 = FireFrames.grid7x7
+    )
+
+    val PulseGrid = PixelPreset(
+        id = "pulsegrid",
+        name = "PulseGrid",
+        grid5x5 = PulseGridFrames.grid5x5,
+        grid7x7 = PulseGridFrames.grid7x7
+    )
+
+    val Windmill = PixelPreset(
+        id = "windmill",
+        name = "Windmill",
+        grid5x5 = WindmillFrames.grid5x5,
+        grid7x7 = WindmillFrames.grid7x7
+    )
+
+    val Tornado = PixelPreset(
+        id = "tornado",
+        name = "Tornado",
+        grid5x5 = TornadoFrames.grid5x5,
+        grid7x7 = TornadoFrames.grid7x7
+    )
+
+    val Sandglass = PixelPreset(
+        id = "sandglass",
+        name = "Sandglass",
+        grid5x5 = SandglassFrames.grid5x5,
+        grid7x7 = SandglassFrames.grid7x7
+    )
+
     val list: List<PixelPreset> = listOf(
-        Newton, Bounce, Syncing, Ripple, RollingDice, Tumbleweed, TheGreatWave
+        Newton, Bounce, Syncing, Ripple, RollingDice, Tumbleweed, TheGreatWave, Heartbeat, Radar, Fire, PulseGrid, Windmill, Tornado, Sandglass
     )
 }

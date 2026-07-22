@@ -42,6 +42,29 @@ object PixelPresets {
     val Sleepy: PixelPreset get() = GamingPresets.Sleepy
     val Pacman: PixelPreset get() = GamingPresets.Pacman
 
+    // 20 New Presets
+    val Heartbeat: PixelPreset get() = MotionPresets.Heartbeat
+    val Radar: PixelPreset get() = MotionPresets.Radar
+    val DNA: PixelPreset get() = TechPresets.Dna
+    val Matrix: PixelPreset get() = TechPresets.Matrix
+    val Sandglass: PixelPreset get() = MotionPresets.Sandglass
+    val PingPong: PixelPreset get() = GamingPresets.PingPong
+    val Crosshair: PixelPreset get() = BasicPresets.Crosshair
+    val Fire: PixelPreset get() = MotionPresets.Fire
+    val InfinityWave: PixelPreset get() = TechPresets.InfinityWave
+    val PacLoop: PixelPreset get() = GamingPresets.PacLoop
+
+    val Helix: PixelPreset get() = TechPresets.Helix
+    val Snake: PixelPreset get() = GamingPresets.Snake
+    val Scanner: PixelPreset get() = BasicPresets.Scanner
+    val PulseGrid: PixelPreset get() = MotionPresets.PulseGrid
+    val Windmill: PixelPreset get() = MotionPresets.Windmill
+    val Tornado: PixelPreset get() = MotionPresets.Tornado
+    val Tetris: PixelPreset get() = GamingPresets.Tetris
+    val DigitalRain: PixelPreset get() = TechPresets.DigitalRain
+    val Equalizer: PixelPreset get() = TechPresets.Equalizer
+    val Eclipse: PixelPreset get() = BasicPresets.Eclipse
+
     /**
      * Complete catalog list of all animation presets.
      */
