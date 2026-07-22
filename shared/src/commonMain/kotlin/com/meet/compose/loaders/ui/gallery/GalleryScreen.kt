@@ -31,27 +31,21 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.meet.compose.loaders.model.PixelPreset
-import com.meet.compose.loaders.presets.PixelPresets
 import com.meet.compose.loaders.ui.common.ColorPickerDialog
 import com.meet.compose.loaders.ui.common.ColorSwatch
 import com.meet.compose.loaders.ui.common.DynamicCustomColorSwatch
 import com.meet.compose.loaders.ui.gallery.components.FilterChip
 import com.meet.compose.loaders.ui.gallery.components.PresetGalleryCard
-
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 enum class ColorPickerTarget { ON_COLOR, OFF_COLOR, CANVAS_BG }
 
@@ -61,8 +55,8 @@ fun GalleryScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onSelectPreset: (PixelPreset) -> Unit,
-    viewModel: GalleryViewModel = viewModel()
 ) {
+    val viewModel = viewModel<GalleryViewModel> { GalleryViewModel() }
     val outlineColor = MaterialTheme.colorScheme.outline
     val defaultCanvasBg = MaterialTheme.colorScheme.background
 
@@ -96,10 +90,12 @@ fun GalleryScreen(
                         viewModel.customActiveColor = selected
                         viewModel.selectedActiveColor = selected
                     }
+
                     ColorPickerTarget.OFF_COLOR -> {
                         viewModel.customInactiveColor = selected
                         viewModel.selectedInactiveColor = selected
                     }
+
                     ColorPickerTarget.CANVAS_BG -> {
                         viewModel.customCanvasBgColor = selected
                         viewModel.selectedCanvasBgColor = selected
@@ -147,7 +143,7 @@ fun GalleryScreen(
                     fontSize = 12.sp
                 )
             }
-            
+
             val uriHandler = LocalUriHandler.current
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -209,18 +205,35 @@ fun GalleryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text("ON:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                            val staticOnColors = listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B))
+                            Text(
+                                "ON:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            val staticOnColors =
+                                listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B))
                             staticOnColors.forEach { color ->
-                                ColorSwatch(color = color, isSelected = viewModel.selectedActiveColor == color, outlineColor = outlineColor, size = 22.dp) { viewModel.selectedActiveColor = color }
+                                ColorSwatch(
+                                    color = color,
+                                    isSelected = viewModel.selectedActiveColor == color,
+                                    outlineColor = outlineColor,
+                                    size = 22.dp
+                                ) { viewModel.selectedActiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = viewModel.customActiveColor,
                                 isSelected = viewModel.selectedActiveColor == viewModel.customActiveColor && viewModel.customActiveColor != null,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
-                                onSelect = { if (viewModel.customActiveColor != null) viewModel.selectedActiveColor = viewModel.customActiveColor!! else viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR },
-                                onEdit = { viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR }
+                                onSelect = {
+                                    if (viewModel.customActiveColor != null) viewModel.selectedActiveColor =
+                                        viewModel.customActiveColor!! else viewModel.activeColorTarget =
+                                        ColorPickerTarget.ON_COLOR
+                                },
+                                onEdit = {
+                                    viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR
+                                }
                             )
                         }
 
@@ -229,18 +242,35 @@ fun GalleryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text("OFF:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                            val staticOffColors = listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7))
+                            Text(
+                                "OFF:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            val staticOffColors =
+                                listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7))
                             staticOffColors.forEach { color ->
-                                ColorSwatch(color = color, isSelected = viewModel.selectedInactiveColor == color, outlineColor = outlineColor, size = 22.dp) { viewModel.selectedInactiveColor = color }
+                                ColorSwatch(
+                                    color = color,
+                                    isSelected = viewModel.selectedInactiveColor == color,
+                                    outlineColor = outlineColor,
+                                    size = 22.dp
+                                ) { viewModel.selectedInactiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = viewModel.customInactiveColor,
                                 isSelected = viewModel.selectedInactiveColor == viewModel.customInactiveColor && viewModel.customInactiveColor != null,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
-                                onSelect = { if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor = viewModel.customInactiveColor!! else viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR },
-                                onEdit = { viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR }
+                                onSelect = {
+                                    if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor =
+                                        viewModel.customInactiveColor!! else viewModel.activeColorTarget =
+                                        ColorPickerTarget.OFF_COLOR
+                                },
+                                onEdit = {
+                                    viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR
+                                }
                             )
                         }
                     }
@@ -255,18 +285,35 @@ fun GalleryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text("BG:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                            val staticBgColors = listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A))
+                            Text(
+                                "BG:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            val staticBgColors =
+                                listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A))
                             staticBgColors.forEach { color ->
-                                ColorSwatch(color = color, isSelected = viewModel.selectedCanvasBgColor == color, outlineColor = outlineColor, size = 22.dp) { viewModel.selectedCanvasBgColor = color }
+                                ColorSwatch(
+                                    color = color,
+                                    isSelected = viewModel.selectedCanvasBgColor == color,
+                                    outlineColor = outlineColor,
+                                    size = 22.dp
+                                ) { viewModel.selectedCanvasBgColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = viewModel.customCanvasBgColor,
                                 isSelected = viewModel.selectedCanvasBgColor == viewModel.customCanvasBgColor && viewModel.customCanvasBgColor != null,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
-                                onSelect = { if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor = viewModel.customCanvasBgColor!! else viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG },
-                                onEdit = { viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG }
+                                onSelect = {
+                                    if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor =
+                                        viewModel.customCanvasBgColor!! else viewModel.activeColorTarget =
+                                        ColorPickerTarget.CANVAS_BG
+                                },
+                                onEdit = {
+                                    viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG
+                                }
                             )
                         }
 
@@ -275,9 +322,17 @@ fun GalleryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Text("Speed:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                            Text(
+                                "Speed:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
                             listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
-                                FilterChip(label = "${speed}x", isSelected = viewModel.globalSpeed == speed) { viewModel.globalSpeed = speed }
+                                FilterChip(
+                                    label = "${speed}x",
+                                    isSelected = viewModel.globalSpeed == speed
+                                ) { viewModel.globalSpeed = speed }
                             }
                         }
                     }
@@ -293,56 +348,136 @@ fun GalleryScreen(
                         horizontalArrangement = Arrangement.spacedBy(20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("ON Color:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                            listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B)).forEach { color ->
-                                ColorSwatch(color = color, isSelected = viewModel.selectedActiveColor == color, outlineColor = outlineColor, size = 22.dp) { viewModel.selectedActiveColor = color }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                "ON Color:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            listOf(
+                                Color(0xFF6366F1),
+                                Color(0xFF10B981),
+                                Color(0xFFF59E0B)
+                            ).forEach { color ->
+                                ColorSwatch(
+                                    color = color,
+                                    isSelected = viewModel.selectedActiveColor == color,
+                                    outlineColor = outlineColor,
+                                    size = 22.dp
+                                ) { viewModel.selectedActiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = viewModel.customActiveColor,
                                 isSelected = viewModel.selectedActiveColor == viewModel.customActiveColor && viewModel.customActiveColor != null,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
-                                onSelect = { if (viewModel.customActiveColor != null) viewModel.selectedActiveColor = viewModel.customActiveColor!! else viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR },
-                                onEdit = { viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR }
+                                onSelect = {
+                                    if (viewModel.customActiveColor != null) viewModel.selectedActiveColor =
+                                        viewModel.customActiveColor!! else viewModel.activeColorTarget =
+                                        ColorPickerTarget.ON_COLOR
+                                },
+                                onEdit = {
+                                    viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR
+                                }
                             )
                         }
 
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("OFF Color:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                            listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7)).forEach { color ->
-                                ColorSwatch(color = color, isSelected = viewModel.selectedInactiveColor == color, outlineColor = outlineColor, size = 22.dp) { viewModel.selectedInactiveColor = color }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                "OFF Color:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            listOf(
+                                outlineColor,
+                                Color(0xFF18181B),
+                                Color(0xFFE4E4E7)
+                            ).forEach { color ->
+                                ColorSwatch(
+                                    color = color,
+                                    isSelected = viewModel.selectedInactiveColor == color,
+                                    outlineColor = outlineColor,
+                                    size = 22.dp
+                                ) { viewModel.selectedInactiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = viewModel.customInactiveColor,
                                 isSelected = viewModel.selectedInactiveColor == viewModel.customInactiveColor && viewModel.customInactiveColor != null,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
-                                onSelect = { if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor = viewModel.customInactiveColor!! else viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR },
-                                onEdit = { viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR }
+                                onSelect = {
+                                    if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor =
+                                        viewModel.customInactiveColor!! else viewModel.activeColorTarget =
+                                        ColorPickerTarget.OFF_COLOR
+                                },
+                                onEdit = {
+                                    viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR
+                                }
                             )
                         }
 
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Canvas BG:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                            listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A)).forEach { color ->
-                                ColorSwatch(color = color, isSelected = viewModel.selectedCanvasBgColor == color, outlineColor = outlineColor, size = 22.dp) { viewModel.selectedCanvasBgColor = color }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                "Canvas BG:",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            listOf(
+                                defaultCanvasBg,
+                                Color(0xFF000000),
+                                Color(0xFF0F172A)
+                            ).forEach { color ->
+                                ColorSwatch(
+                                    color = color,
+                                    isSelected = viewModel.selectedCanvasBgColor == color,
+                                    outlineColor = outlineColor,
+                                    size = 22.dp
+                                ) { viewModel.selectedCanvasBgColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = viewModel.customCanvasBgColor,
                                 isSelected = viewModel.selectedCanvasBgColor == viewModel.customCanvasBgColor && viewModel.customCanvasBgColor != null,
                                 outlineColor = outlineColor,
                                 size = 22.dp,
-                                onSelect = { if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor = viewModel.customCanvasBgColor!! else viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG },
-                                onEdit = { viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG }
+                                onSelect = {
+                                    if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor =
+                                        viewModel.customCanvasBgColor!! else viewModel.activeColorTarget =
+                                        ColorPickerTarget.CANVAS_BG
+                                },
+                                onEdit = {
+                                    viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG
+                                }
                             )
                         }
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Speed:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "Speed:",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
                         listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
-                            FilterChip(label = "${speed}x", isSelected = viewModel.globalSpeed == speed) { viewModel.globalSpeed = speed }
+                            FilterChip(
+                                label = "${speed}x",
+                                isSelected = viewModel.globalSpeed == speed
+                            ) { viewModel.globalSpeed = speed }
                         }
                     }
                 }

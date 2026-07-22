@@ -34,8 +34,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,8 +76,8 @@ fun StudioDetailScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onBack: () -> Unit,
-    viewModel: StudioDetailViewModel = viewModel()
 ) {
+    val viewModel = viewModel<StudioDetailViewModel> { StudioDetailViewModel() }
     val outlineColor = MaterialTheme.colorScheme.outline
     val defaultCanvasBg = MaterialTheme.colorScheme.background
 
@@ -126,10 +126,12 @@ fun StudioDetailScreen(
                         viewModel.customActiveColor = selected
                         viewModel.selectedActiveColor = selected
                     }
+
                     ColorPickerTarget.OFF_COLOR -> {
                         viewModel.customInactiveColor = selected
                         viewModel.selectedInactiveColor = selected
                     }
+
                     ColorPickerTarget.CANVAS_BG -> {
                         viewModel.customCanvasBgColor = selected
                         viewModel.selectedCanvasBgColor = selected
@@ -213,7 +215,13 @@ fun StudioDetailScreen(
             val isCompact = maxWidth < 600.dp
 
             val currentAnimation = preset.selectAnimation(viewModel.selectedGridSize)
-            val generatedCode = CodeExporter.generateCode(preset, viewModel.selectedGridSize, viewModel.loaderSize.value.toInt(), viewModel.speedMultiplier, viewModel.selectedPixelShape)
+            val generatedCode = CodeExporter.generateCode(
+                preset,
+                viewModel.selectedGridSize,
+                viewModel.loaderSize.value.toInt(),
+                viewModel.speedMultiplier,
+                viewModel.selectedPixelShape
+            )
             val generatedSvg = SvgExporter.exportAnimatedSvg(
                 animation = currentAnimation,
                 activeHex = viewModel.selectedActiveColor.toHexString(),
@@ -221,7 +229,8 @@ fun StudioDetailScreen(
                 speedMultiplier = viewModel.speedMultiplier,
                 shape = viewModel.selectedPixelShape
             )
-            val activeExportText = if (viewModel.exportFormat == ExportFormat.KOTLIN_CODE) generatedCode else generatedSvg
+            val activeExportText =
+                if (viewModel.exportFormat == ExportFormat.KOTLIN_CODE) generatedCode else generatedSvg
 
             // -------------------------------------------------------------
             // REUSABLE SECTIONS (MovableContent)
@@ -233,13 +242,29 @@ fun StudioDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        GridSizeOptionButton(label = "5×5", isSelected = viewModel.selectedGridSize == PixelGridSize.Grid5x5) { viewModel.selectedGridSize = PixelGridSize.Grid5x5 }
-                        GridSizeOptionButton(label = "7×7", isSelected = viewModel.selectedGridSize == PixelGridSize.Grid7x7) { viewModel.selectedGridSize = PixelGridSize.Grid7x7 }
+                        GridSizeOptionButton(
+                            label = "5×5",
+                            isSelected = viewModel.selectedGridSize == PixelGridSize.Grid5x5
+                        ) { viewModel.selectedGridSize = PixelGridSize.Grid5x5 }
+                        GridSizeOptionButton(
+                            label = "7×7",
+                            isSelected = viewModel.selectedGridSize == PixelGridSize.Grid7x7
+                        ) { viewModel.selectedGridSize = PixelGridSize.Grid7x7 }
                     }
                 }
             }
 
-            val previewCanvas = remember(preset, viewModel.selectedGridSize, viewModel.loaderSize, viewModel.selectedActiveColor, viewModel.selectedInactiveColor, viewModel.selectedPixelShape, viewModel.isPlaying, viewModel.speedMultiplier, viewModel.selectedCanvasBgColor) {
+            val previewCanvas = remember(
+                preset,
+                viewModel.selectedGridSize,
+                viewModel.loaderSize,
+                viewModel.selectedActiveColor,
+                viewModel.selectedInactiveColor,
+                viewModel.selectedPixelShape,
+                viewModel.isPlaying,
+                viewModel.speedMultiplier,
+                viewModel.selectedCanvasBgColor
+            ) {
                 movableContentOf { isComp: Boolean ->
                     Box(
                         modifier = Modifier
@@ -291,59 +316,128 @@ fun StudioDetailScreen(
                 }
             }
 
-            val colorControls = remember(viewModel.selectedActiveColor, viewModel.customActiveColor, viewModel.selectedInactiveColor, viewModel.customInactiveColor, viewModel.selectedCanvasBgColor, viewModel.customCanvasBgColor, outlineColor, defaultCanvasBg) {
+            val colorControls = remember(
+                viewModel.selectedActiveColor,
+                viewModel.customActiveColor,
+                viewModel.selectedInactiveColor,
+                viewModel.customInactiveColor,
+                viewModel.selectedCanvasBgColor,
+                viewModel.customCanvasBgColor,
+                outlineColor,
+                defaultCanvasBg
+            ) {
                 movableContentOf {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         // ON Color
                         Column {
-                            Text("Active Color (ON)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Text(
+                                "Active Color (ON)",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                                listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B)).forEach { c ->
-                                    ColorSwatch(color = c, isSelected = viewModel.selectedActiveColor == c) { viewModel.selectedActiveColor = c }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                listOf(
+                                    Color(0xFF6366F1),
+                                    Color(0xFF10B981),
+                                    Color(0xFFF59E0B)
+                                ).forEach { c ->
+                                    ColorSwatch(
+                                        color = c,
+                                        isSelected = viewModel.selectedActiveColor == c
+                                    ) { viewModel.selectedActiveColor = c }
                                 }
                                 DynamicCustomColorSwatch(
                                     customColor = viewModel.customActiveColor,
                                     isSelected = viewModel.selectedActiveColor == viewModel.customActiveColor && viewModel.customActiveColor != null,
                                     outlineColor = outlineColor,
-                                    onSelect = { if (viewModel.customActiveColor != null) viewModel.selectedActiveColor = viewModel.customActiveColor!! else viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR },
-                                    onEdit = { viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR }
+                                    onSelect = {
+                                        if (viewModel.customActiveColor != null) viewModel.selectedActiveColor =
+                                            viewModel.customActiveColor!! else viewModel.activeColorTarget =
+                                            ColorPickerTarget.ON_COLOR
+                                    },
+                                    onEdit = {
+                                        viewModel.activeColorTarget = ColorPickerTarget.ON_COLOR
+                                    }
                                 )
                             }
                         }
 
                         // OFF Color
                         Column {
-                            Text("Inactive Color (OFF)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Text(
+                                "Inactive Color (OFF)",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                                listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7)).forEach { c ->
-                                    ColorSwatch(color = c, isSelected = viewModel.selectedInactiveColor == c) { viewModel.selectedInactiveColor = c }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                listOf(
+                                    outlineColor,
+                                    Color(0xFF18181B),
+                                    Color(0xFFE4E4E7)
+                                ).forEach { c ->
+                                    ColorSwatch(
+                                        color = c,
+                                        isSelected = viewModel.selectedInactiveColor == c
+                                    ) { viewModel.selectedInactiveColor = c }
                                 }
                                 DynamicCustomColorSwatch(
                                     customColor = viewModel.customInactiveColor,
                                     isSelected = viewModel.selectedInactiveColor == viewModel.customInactiveColor && viewModel.customInactiveColor != null,
                                     outlineColor = outlineColor,
-                                    onSelect = { if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor = viewModel.customInactiveColor!! else viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR },
-                                    onEdit = { viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR }
+                                    onSelect = {
+                                        if (viewModel.customInactiveColor != null) viewModel.selectedInactiveColor =
+                                            viewModel.customInactiveColor!! else viewModel.activeColorTarget =
+                                            ColorPickerTarget.OFF_COLOR
+                                    },
+                                    onEdit = {
+                                        viewModel.activeColorTarget = ColorPickerTarget.OFF_COLOR
+                                    }
                                 )
                             }
                         }
 
                         // Canvas BG
                         Column {
-                            Text("Canvas BG", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Text(
+                                "Canvas BG",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                                listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A)).forEach { c ->
-                                    ColorSwatch(color = c, isSelected = viewModel.selectedCanvasBgColor == c) { viewModel.selectedCanvasBgColor = c }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                listOf(
+                                    defaultCanvasBg,
+                                    Color(0xFF000000),
+                                    Color(0xFF0F172A)
+                                ).forEach { c ->
+                                    ColorSwatch(
+                                        color = c,
+                                        isSelected = viewModel.selectedCanvasBgColor == c
+                                    ) { viewModel.selectedCanvasBgColor = c }
                                 }
                                 DynamicCustomColorSwatch(
                                     customColor = viewModel.customCanvasBgColor,
                                     isSelected = viewModel.selectedCanvasBgColor == viewModel.customCanvasBgColor && viewModel.customCanvasBgColor != null,
                                     outlineColor = outlineColor,
-                                    onSelect = { if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor = viewModel.customCanvasBgColor!! else viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG },
-                                    onEdit = { viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG }
+                                    onSelect = {
+                                        if (viewModel.customCanvasBgColor != null) viewModel.selectedCanvasBgColor =
+                                            viewModel.customCanvasBgColor!! else viewModel.activeColorTarget =
+                                            ColorPickerTarget.CANVAS_BG
+                                    },
+                                    onEdit = {
+                                        viewModel.activeColorTarget = ColorPickerTarget.CANVAS_BG
+                                    }
                                 )
                             }
                         }
@@ -351,46 +445,82 @@ fun StudioDetailScreen(
                 }
             }
 
-            val configControls = remember(viewModel.loaderSize, viewModel.speedMultiplier, viewModel.selectedPixelShape) {
+            val configControls = remember(
+                viewModel.loaderSize,
+                viewModel.speedMultiplier,
+                viewModel.selectedPixelShape
+            ) {
                 movableContentOf {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         // Size
                         Column {
-                            Text("Size", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Text(
+                                "Size",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 listOf(24.dp, 36.dp, 48.dp, 64.dp).forEach { s ->
-                                    OptionBadge(label = "${s.value.toInt()}dp", isSelected = viewModel.loaderSize == s) { viewModel.loaderSize = s }
+                                    OptionBadge(
+                                        label = "${s.value.toInt()}dp",
+                                        isSelected = viewModel.loaderSize == s
+                                    ) { viewModel.loaderSize = s }
                                 }
                             }
                         }
 
                         // Speed
                         Column {
-                            Text("Speed Multiplier", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Text(
+                                "Speed Multiplier",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { spd ->
-                                    OptionBadge(label = "${spd}x", isSelected = viewModel.speedMultiplier == spd) { viewModel.speedMultiplier = spd }
+                                    OptionBadge(
+                                        label = "${spd}x",
+                                        isSelected = viewModel.speedMultiplier == spd
+                                    ) { viewModel.speedMultiplier = spd }
                                 }
                             }
                         }
 
                         // Shape
                         Column {
-                            Text("Pixel Shape", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Text(
+                                "Pixel Shape",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                OptionBadge(label = "Circle", isSelected = viewModel.selectedPixelShape == PixelShape.Circle) { viewModel.selectedPixelShape = PixelShape.Circle }
-                                OptionBadge(label = "Square", isSelected = viewModel.selectedPixelShape == PixelShape.Square) { viewModel.selectedPixelShape = PixelShape.Square }
-                                OptionBadge(label = "Rounded", isSelected = viewModel.selectedPixelShape == PixelShape.RoundedSquare) { viewModel.selectedPixelShape = PixelShape.RoundedSquare }
+                                OptionBadge(
+                                    label = "Circle",
+                                    isSelected = viewModel.selectedPixelShape == PixelShape.Circle
+                                ) { viewModel.selectedPixelShape = PixelShape.Circle }
+                                OptionBadge(
+                                    label = "Square",
+                                    isSelected = viewModel.selectedPixelShape == PixelShape.Square
+                                ) { viewModel.selectedPixelShape = PixelShape.Square }
+                                OptionBadge(
+                                    label = "Rounded",
+                                    isSelected = viewModel.selectedPixelShape == PixelShape.RoundedSquare
+                                ) { viewModel.selectedPixelShape = PixelShape.RoundedSquare }
                             }
                         }
                     }
                 }
             }
 
-            val exportSection = remember(viewModel.exportFormat, viewModel.isCopied, viewModel.isDependencyCopied, dependencySetupText) {
+            val exportSection = remember(
+                viewModel.exportFormat,
+                viewModel.isCopied,
+                viewModel.isDependencyCopied,
+                dependencySetupText
+            ) {
                 movableContentOf { activeText: String ->
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         // Dependency Setup Banner
@@ -416,10 +546,18 @@ fun StudioDetailScreen(
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(6.dp))
-                                        .background(if (viewModel.isDependencyCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.surfaceVariant)
+                                        .background(
+                                            if (viewModel.isDependencyCopied) Color(
+                                                0xFF10B981
+                                            ) else MaterialTheme.colorScheme.surfaceVariant
+                                        )
                                         .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
                                         .clickable {
-                                            clipboardManager.setText(AnnotatedString(dependencySetupText))
+                                            clipboardManager.setText(
+                                                AnnotatedString(
+                                                    dependencySetupText
+                                                )
+                                            )
                                             viewModel.isDependencyCopied = true
                                         }
                                         .padding(horizontal = 10.dp, vertical = 6.dp)
