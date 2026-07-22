@@ -6,6 +6,8 @@
 
 **Compose Loaders** is a lightweight, customizable, open-source **Compose Multiplatform (KMP)** library featuring **31 handcrafted pixel loading animations** across Android, iOS, Desktop (JVM), and Web (Wasm/JS).
 
+🌐 **Live Interactive Demo**: [coding-meet.github.io/compose-loaders](https://coding-meet.github.io/compose-loaders/)
+
 ---
 
 ## 🚀 Key Features
@@ -217,6 +219,34 @@ com.meet.compose.loaders
 └── export/                           [PUBLIC] Exporter Utilities
     ├── SvgExporter.kt                [PUBLIC] Vector SVG exporter
     └── CodeExporter.kt               [PUBLIC] Standalone Compose code generator
+```
+
+---
+
+## 📂 Showcase App UI Architecture
+
+The showcase app within the `:shared` module is structured cleanly into screen-specific feature subfolders and common shared widgets:
+
+```
+shared/src/commonMain/kotlin/com/meet/compose/loaders/ui
+├── App.kt                          # Main App layout and Navigation
+│
+├── common/                         # Shared UI Components across screens
+│   ├── ColorPickerDialog.kt        # Color selection picker dialog
+│   ├── ColorSwatch.kt              # Grid pixel color selection swatch
+│   └── DynamicCustomColorSwatch.kt # Advanced customizable color swatch
+│
+├── gallery/                        # Gallery Screen & components
+│   ├── GalleryScreen.kt            # Showcase grid of all preset loaders
+│   └── components/
+│       ├── FilterChip.kt           # Speed control multiplier toggles
+│       └── PresetGalleryCard.kt    # Individual loader card preview
+│
+└── studio/                         # Studio Detail workspace screen
+    ├── StudioDetailScreen.kt       # Live customization & code/SVG export panel
+    └── components/
+        ├── GridSizeOptionButton.kt # Resolution grid sizes toggles (5×5 / 7×7)
+        └── OptionBadge.kt          # Badges for size & speed option buttons
 ```
 
 ---
