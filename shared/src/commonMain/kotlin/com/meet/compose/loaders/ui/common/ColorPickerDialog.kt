@@ -1,4 +1,4 @@
-package com.meet.compose.loaders.ui
+package com.meet.compose.loaders.ui.common
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -293,20 +293,17 @@ private fun SatValCanvas(
             }
     ) {
         Canvas(modifier = Modifier.fillMaxWidth().height(150.dp)) {
-            // Horizontal Saturation Gradient (White to Pure Hue)
             drawRect(
                 brush = Brush.horizontalGradient(
                     colors = listOf(Color.White, pureHueColor)
                 )
             )
-            // Vertical Value Gradient (Transparent to Black)
             drawRect(
                 brush = Brush.verticalGradient(
                     colors = listOf(Color.Transparent, Color.Black)
                 )
             )
 
-            // Selector Circle Indicator
             val selectorX = saturation * size.width
             val selectorY = (1f - value) * size.height
             drawCircle(
@@ -361,7 +358,6 @@ private fun HueSlider(
                 brush = Brush.horizontalGradient(colors = rainbowColors)
             )
 
-            // Hue Handle Indicator
             val handleX = (hue / 360f).coerceIn(0f, 1f) * size.width
             drawCircle(
                 color = Color.White,
@@ -379,7 +375,6 @@ private fun HueSlider(
     }
 }
 
-// HSV Utilities
 fun hsvToColor(hue: Float, saturation: Float, value: Float): Color {
     val c = value * saturation
     val x = c * (1 - abs((hue / 60f) % 2 - 1))

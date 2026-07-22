@@ -1,20 +1,132 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height: 100%">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>compose-loaders</title>
     <link type="text/css" rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: #0f172a;
+            margin: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-family: system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+        }
+
+        .loader-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* 5x5 grid loader container */
+        .pixel-spinner {
+            display: grid;
+            grid-template-columns: repeat(5, 12px);
+            grid-template-rows: repeat(5, 12px);
+            gap: 3px;
+        }
+
+        .pixel {
+            width: 12px;
+            height: 12px;
+            background-color: #1e293b;
+            border-radius: 2px;
+        }
+
+        /* Pixel Spinner animations */
+        @keyframes spin6 {
+            0%, 12.5%, 25%, 87.5%, 100% { background-color: #6366f1; }
+            37.5%, 50%, 62.5%, 75% { background-color: #1e293b; }
+        }
+        @keyframes spin7 {
+            0%, 12.5%, 25%, 37.5%, 100% { background-color: #6366f1; }
+            50%, 62.5%, 75%, 87.5% { background-color: #1e293b; }
+        }
+        @keyframes spin8 {
+            12.5%, 25%, 37.5%, 50% { background-color: #6366f1; }
+            0%, 62.5%, 75%, 87.5%, 100% { background-color: #1e293b; }
+        }
+        @keyframes spin11 {
+            0%, 12.5%, 75%, 87.5%, 100% { background-color: #6366f1; }
+            25%, 37.5%, 50%, 62.5% { background-color: #1e293b; }
+        }
+        @keyframes spin13 {
+            25%, 37.5%, 50%, 62.5% { background-color: #6366f1; }
+            0%, 12.5%, 75%, 87.5%, 100% { background-color: #1e293b; }
+        }
+        @keyframes spin16 {
+            0%, 12.5%, 62.5%, 75%, 87.5%, 100% { background-color: #6366f1; }
+            25%, 37.5%, 50% { background-color: #1e293b; }
+        }
+        @keyframes spin17 {
+            50%, 62.5%, 75%, 87.5%, 100% { background-color: #6366f1; }
+            0%, 12.5%, 25%, 37.5% { background-color: #1e293b; }
+        }
+        @keyframes spin18 {
+            37.5%, 50%, 62.5%, 75%, 87.5% { background-color: #6366f1; }
+            0%, 12.5%, 25%, 93.75%, 100% { background-color: #1e293b; }
+        }
+
+        .p6 { animation: spin6 1.2s steps(1) infinite; }
+        .p7 { animation: spin7 1.2s steps(1) infinite; }
+        .p8 { animation: spin8 1.2s steps(1) infinite; }
+        .p11 { animation: spin11 1.2s steps(1) infinite; }
+        .p13 { animation: spin13 1.2s steps(1) infinite; }
+        .p16 { animation: spin16 1.2s steps(1) infinite; }
+        .p17 { animation: spin17 1.2s steps(1) infinite; }
+        .p18 { animation: spin18 1.2s steps(1) infinite; }
+
+        .loading-text {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+    </style>
 </head>
-<body style="text-align: center; align-content: center">
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 50 50" role="presentation">
-        <circle cx="25" cy="25" r="20" stroke="#ccc" stroke-width="4" fill="none"/>
-        <circle cx="25" cy="25" r="20" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"
-                stroke-dasharray="90 125">
-            <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s"
-                              repeatCount="indefinite"/>
-        </circle>
-    </svg>
+<body>
+    <div class="loader-wrapper">
+        <div class="pixel-spinner">
+            <!-- Row 0 -->
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <!-- Row 1 -->
+            <div class="pixel"></div>
+            <div class="pixel p6"></div>
+            <div class="pixel p7"></div>
+            <div class="pixel p8"></div>
+            <div class="pixel"></div>
+            <!-- Row 2 -->
+            <div class="pixel"></div>
+            <div class="pixel p11"></div>
+            <div class="pixel"></div>
+            <div class="pixel p13"></div>
+            <div class="pixel"></div>
+            <!-- Row 3 -->
+            <div class="pixel"></div>
+            <div class="pixel p16"></div>
+            <div class="pixel p17"></div>
+            <div class="pixel p18"></div>
+            <div class="pixel"></div>
+            <!-- Row 4 -->
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+            <div class="pixel"></div>
+        </div>
+        <div class="loading-text">Loading Studio...</div>
+    </div>
     <script type="application/javascript" src="webApp.js"></script>
 </body>
 </html>

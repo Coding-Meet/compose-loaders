@@ -1,8 +1,7 @@
-package com.meet.compose.loaders.ui
+package com.meet.compose.loaders.ui.gallery
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -25,9 +23,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,10 +42,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.meet.compose.loaders.PixelLoader
-import com.meet.compose.loaders.model.PixelGridSize
+import androidx.compose.ui.platform.LocalUriHandler
 import com.meet.compose.loaders.model.PixelPreset
 import com.meet.compose.loaders.presets.PixelPresets
+import com.meet.compose.loaders.ui.common.ColorPickerDialog
+import com.meet.compose.loaders.ui.common.ColorSwatch
+import com.meet.compose.loaders.ui.common.DynamicCustomColorSwatch
+import com.meet.compose.loaders.ui.gallery.components.FilterChip
+import com.meet.compose.loaders.ui.gallery.components.PresetGalleryCard
 
 enum class ColorPickerTarget { ON_COLOR, OFF_COLOR, CANVAS_BG }
 
@@ -149,20 +150,39 @@ fun GalleryScreen(
                     fontSize = 12.sp
                 )
             }
+            
+            val uriHandler = LocalUriHandler.current
 
-            IconButton(
-                onClick = onToggleTheme,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .border(1.dp, outlineColor, RoundedCornerShape(10.dp))
-            ) {
-                Icon(
-                    imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                    contentDescription = "Toggle Theme",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp)
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(
+                    onClick = { uriHandler.openUri("https://github.com/Coding-Meet/compose-loaders") },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(1.dp, outlineColor, RoundedCornerShape(10.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Code,
+                        contentDescription = "GitHub Repository",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = onToggleTheme,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(1.dp, outlineColor, RoundedCornerShape(10.dp))
+                ) {
+                    Icon(
+                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "Toggle Theme",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
 
@@ -195,12 +215,13 @@ fun GalleryScreen(
                             Text("ON:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                             val staticOnColors = listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B))
                             staticOnColors.forEach { color ->
-                                ColorSwatch(color = color, isSelected = selectedActiveColor == color, outlineColor = outlineColor) { selectedActiveColor = color }
+                                ColorSwatch(color = color, isSelected = selectedActiveColor == color, outlineColor = outlineColor, size = 22.dp) { selectedActiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = customActiveColor,
                                 isSelected = selectedActiveColor == customActiveColor && customActiveColor != null,
                                 outlineColor = outlineColor,
+                                size = 22.dp,
                                 onSelect = { if (customActiveColor != null) selectedActiveColor = customActiveColor!! else activeColorTarget = ColorPickerTarget.ON_COLOR },
                                 onEdit = { activeColorTarget = ColorPickerTarget.ON_COLOR }
                             )
@@ -214,12 +235,13 @@ fun GalleryScreen(
                             Text("OFF:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                             val staticOffColors = listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7))
                             staticOffColors.forEach { color ->
-                                ColorSwatch(color = color, isSelected = selectedInactiveColor == color, outlineColor = outlineColor) { selectedInactiveColor = color }
+                                ColorSwatch(color = color, isSelected = selectedInactiveColor == color, outlineColor = outlineColor, size = 22.dp) { selectedInactiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = customInactiveColor,
                                 isSelected = selectedInactiveColor == customInactiveColor && customInactiveColor != null,
                                 outlineColor = outlineColor,
+                                size = 22.dp,
                                 onSelect = { if (customInactiveColor != null) selectedInactiveColor = customInactiveColor!! else activeColorTarget = ColorPickerTarget.OFF_COLOR },
                                 onEdit = { activeColorTarget = ColorPickerTarget.OFF_COLOR }
                             )
@@ -239,12 +261,13 @@ fun GalleryScreen(
                             Text("BG:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                             val staticBgColors = listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A))
                             staticBgColors.forEach { color ->
-                                ColorSwatch(color = color, isSelected = selectedCanvasBgColor == color, outlineColor = outlineColor) { selectedCanvasBgColor = color }
+                                ColorSwatch(color = color, isSelected = selectedCanvasBgColor == color, outlineColor = outlineColor, size = 22.dp) { selectedCanvasBgColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = customCanvasBgColor,
                                 isSelected = selectedCanvasBgColor == customCanvasBgColor && customCanvasBgColor != null,
                                 outlineColor = outlineColor,
+                                size = 22.dp,
                                 onSelect = { if (customCanvasBgColor != null) selectedCanvasBgColor = customCanvasBgColor!! else activeColorTarget = ColorPickerTarget.CANVAS_BG },
                                 onEdit = { activeColorTarget = ColorPickerTarget.CANVAS_BG }
                             )
@@ -276,12 +299,13 @@ fun GalleryScreen(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("ON Color:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                             listOf(Color(0xFF6366F1), Color(0xFF10B981), Color(0xFFF59E0B)).forEach { color ->
-                                ColorSwatch(color = color, isSelected = selectedActiveColor == color, outlineColor = outlineColor) { selectedActiveColor = color }
+                                ColorSwatch(color = color, isSelected = selectedActiveColor == color, outlineColor = outlineColor, size = 22.dp) { selectedActiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = customActiveColor,
                                 isSelected = selectedActiveColor == customActiveColor && customActiveColor != null,
                                 outlineColor = outlineColor,
+                                size = 22.dp,
                                 onSelect = { if (customActiveColor != null) selectedActiveColor = customActiveColor!! else activeColorTarget = ColorPickerTarget.ON_COLOR },
                                 onEdit = { activeColorTarget = ColorPickerTarget.ON_COLOR }
                             )
@@ -290,12 +314,13 @@ fun GalleryScreen(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("OFF Color:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                             listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7)).forEach { color ->
-                                ColorSwatch(color = color, isSelected = selectedInactiveColor == color, outlineColor = outlineColor) { selectedInactiveColor = color }
+                                ColorSwatch(color = color, isSelected = selectedInactiveColor == color, outlineColor = outlineColor, size = 22.dp) { selectedInactiveColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = customInactiveColor,
                                 isSelected = selectedInactiveColor == customInactiveColor && customInactiveColor != null,
                                 outlineColor = outlineColor,
+                                size = 22.dp,
                                 onSelect = { if (customInactiveColor != null) selectedInactiveColor = customInactiveColor!! else activeColorTarget = ColorPickerTarget.OFF_COLOR },
                                 onEdit = { activeColorTarget = ColorPickerTarget.OFF_COLOR }
                             )
@@ -304,12 +329,13 @@ fun GalleryScreen(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("Canvas BG:", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                             listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A)).forEach { color ->
-                                ColorSwatch(color = color, isSelected = selectedCanvasBgColor == color, outlineColor = outlineColor) { selectedCanvasBgColor = color }
+                                ColorSwatch(color = color, isSelected = selectedCanvasBgColor == color, outlineColor = outlineColor, size = 22.dp) { selectedCanvasBgColor = color }
                             }
                             DynamicCustomColorSwatch(
                                 customColor = customCanvasBgColor,
                                 isSelected = selectedCanvasBgColor == customCanvasBgColor && customCanvasBgColor != null,
                                 outlineColor = outlineColor,
+                                size = 22.dp,
                                 onSelect = { if (customCanvasBgColor != null) selectedCanvasBgColor = customCanvasBgColor!! else activeColorTarget = ColorPickerTarget.CANVAS_BG },
                                 onEdit = { activeColorTarget = ColorPickerTarget.CANVAS_BG }
                             )
@@ -348,158 +374,3 @@ fun GalleryScreen(
         }
     }
 }
-
-@Composable
-private fun DynamicCustomColorSwatch(
-    customColor: Color?,
-    isSelected: Boolean,
-    outlineColor: Color,
-    onSelect: () -> Unit,
-    onEdit: () -> Unit
-) {
-    if (customColor == null) {
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .border(1.dp, outlineColor, CircleShape)
-                .clickable(onClick = onEdit),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add Custom Color",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(12.dp)
-            )
-        }
-    } else {
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .background(customColor)
-                .border(
-                    width = if (isSelected) 2.dp else 1.dp,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else outlineColor,
-                    shape = CircleShape
-                )
-                .clickable(onClick = onSelect),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(onClick = onEdit)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Custom Color",
-                    tint = if (customColor == Color.White) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.size(10.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FilterChip(
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .height(26.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background)
-            .border(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-private fun ColorSwatch(
-    color: Color,
-    isSelected: Boolean,
-    outlineColor: Color,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(22.dp)
-            .clip(CircleShape)
-            .background(color)
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else outlineColor,
-                shape = CircleShape
-            )
-            .clickable(onClick = onClick)
-    )
-}
-
-@Composable
-private fun PresetGalleryCard(
-    preset: PixelPreset,
-    activeColor: Color,
-    inactiveColor: Color,
-    canvasBgColor: Color,
-    speedMultiplier: Float,
-    onClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(110.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(canvasBgColor),
-            contentAlignment = Alignment.Center
-        ) {
-            PixelLoader(
-                preset = preset,
-                gridSize = PixelGridSize.Grid5x5,
-                modifier = Modifier.size(44.dp),
-                color = activeColor,
-                inactiveColor = inactiveColor,
-                speedMultiplier = speedMultiplier
-            )
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = preset.name,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}
-

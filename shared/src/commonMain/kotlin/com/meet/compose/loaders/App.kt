@@ -17,8 +17,8 @@ import androidx.navigation.toRoute
 import com.meet.compose.loaders.navigation.ScreenRoute
 import com.meet.compose.loaders.presets.PixelPresets
 import com.meet.compose.loaders.theme.AppTheme
-import com.meet.compose.loaders.ui.GalleryScreen
-import com.meet.compose.loaders.ui.StudioDetailScreen
+import com.meet.compose.loaders.ui.gallery.GalleryScreen
+import com.meet.compose.loaders.ui.studio.StudioDetailScreen
 
 @Composable
 fun App() {
