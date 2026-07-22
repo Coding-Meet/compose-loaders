@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.meet.compose.loaders.LibraryConfig
 import com.meet.compose.loaders.PixelLoader
 import com.meet.compose.loaders.export.CodeExporter
 import com.meet.compose.loaders.export.SvgExporter
@@ -77,12 +79,13 @@ fun StudioDetailScreen(
 ) {
     var selectedGridSize by remember { mutableStateOf<PixelGridSize>(PixelGridSize.Grid5x5) }
 
+    val defaultOnColor = Color(0xFF6366F1)
     val primaryColor = MaterialTheme.colorScheme.primary
     val outlineColor = MaterialTheme.colorScheme.outline
     val defaultCanvasBg = MaterialTheme.colorScheme.background
 
     var customActiveColor by remember { mutableStateOf<Color?>(null) }
-    var selectedActiveColor by remember { mutableStateOf<Color>(primaryColor) }
+    var selectedActiveColor by remember { mutableStateOf<Color>(defaultOnColor) }
 
     var customInactiveColor by remember { mutableStateOf<Color?>(null) }
     var selectedInactiveColor by remember { mutableStateOf<Color>(outlineColor) }
@@ -100,6 +103,19 @@ fun StudioDetailScreen(
     @Suppress("DEPRECATION")
     val clipboardManager = LocalClipboardManager.current
     var isCopied by remember { mutableStateOf(false) }
+    var isDependencyCopied by remember { mutableStateOf(false) }
+
+    val dependencySetupText = """
+        // Add the dependency to your commonMain dependencies in build.gradle.kts:
+        commonMain.dependencies {
+            implementation("${LibraryConfig.DEPENDENCY_COORDINATE}")
+        }
+
+        // Or reference local project module inside your multiplatform workspace:
+        commonMain.dependencies {
+            implementation(project(":loaders"))
+        }
+    """.trimIndent()
 
     // Color Picker Dialog Modal
     activeColorTarget?.let { target ->
@@ -379,6 +395,97 @@ fun StudioDetailScreen(
 
                         // Export Format & Code Section
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            // Gradle Setup Banner
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .border(1.dp, outlineColor, RoundedCornerShape(10.dp))
+                                    .padding(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Dependency Setup",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(if (isDependencyCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                                .clickable {
+                                                    clipboardManager.setText(AnnotatedString(dependencySetupText))
+                                                    isDependencyCopied = true
+                                                }
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (isDependencyCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                                                    contentDescription = "Copy Setup",
+                                                    tint = if (isDependencyCopied) Color.White else MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(10.dp)
+                                                )
+                                                Text(
+                                                    text = if (isDependencyCopied) "Copied!" else "Copy Setup",
+                                                    fontSize = 8.sp,
+                                                    color = if (isDependencyCopied) Color.White else MaterialTheme.colorScheme.primary,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text("gradle", fontSize = 8.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(100.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(MaterialTheme.colorScheme.background)
+                                        .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .verticalScroll(rememberScrollState())
+                                            .horizontalScroll(rememberScrollState())
+                                    ) {
+                                        SelectionContainer {
+                                            Text(
+                                                text = dependencySetupText,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontSize = 10.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -445,12 +552,14 @@ fun StudioDetailScreen(
                                         .verticalScroll(rememberScrollState())
                                         .horizontalScroll(rememberScrollState())
                                 ) {
-                                    Text(
-                                        text = activeExportText,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        fontSize = 11.sp,
-                                        fontFamily = FontFamily.Monospace
-                                    )
+                                    SelectionContainer {
+                                        Text(
+                                            text = activeExportText,
+                                            color = MaterialTheme.colorScheme.onBackground,
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -616,6 +725,97 @@ fun StudioDetailScreen(
 
                         // Export Format & Code Section
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            // Gradle Setup Banner
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .border(1.dp, outlineColor, RoundedCornerShape(10.dp))
+                                    .padding(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Dependency Setup",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(if (isDependencyCopied) Color(0xFF10B981) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                                .clickable {
+                                                    clipboardManager.setText(AnnotatedString(dependencySetupText))
+                                                    isDependencyCopied = true
+                                                }
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (isDependencyCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                                                    contentDescription = "Copy Setup",
+                                                    tint = if (isDependencyCopied) Color.White else MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(10.dp)
+                                                )
+                                                Text(
+                                                    text = if (isDependencyCopied) "Copied!" else "Copy Setup",
+                                                    fontSize = 8.sp,
+                                                    color = if (isDependencyCopied) Color.White else MaterialTheme.colorScheme.primary,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text("gradle", fontSize = 8.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(100.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(MaterialTheme.colorScheme.background)
+                                        .border(1.dp, outlineColor, RoundedCornerShape(6.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .verticalScroll(rememberScrollState())
+                                            .horizontalScroll(rememberScrollState())
+                                    ) {
+                                        SelectionContainer {
+                                            Text(
+                                                text = dependencySetupText,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontSize = 10.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -682,12 +882,14 @@ fun StudioDetailScreen(
                                         .verticalScroll(rememberScrollState())
                                         .horizontalScroll(rememberScrollState())
                                 ) {
-                                    Text(
-                                        text = activeExportText,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        fontSize = 11.sp,
-                                        fontFamily = FontFamily.Monospace
-                                    )
+                                    SelectionContainer {
+                                        Text(
+                                            text = activeExportText,
+                                            color = MaterialTheme.colorScheme.onBackground,
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    }
                                 }
                             }
                         }
