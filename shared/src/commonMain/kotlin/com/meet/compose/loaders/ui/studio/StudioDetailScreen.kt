@@ -1,4 +1,4 @@
-package com.meet.compose.loaders.ui
+package com.meet.compose.loaders.ui.studio
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,16 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -55,8 +52,14 @@ import com.meet.compose.loaders.export.CodeExporter
 import com.meet.compose.loaders.export.SvgExporter
 import com.meet.compose.loaders.model.PixelGridSize
 import com.meet.compose.loaders.model.PixelPreset
+import com.meet.compose.loaders.ui.common.ColorPickerDialog
+import com.meet.compose.loaders.ui.common.ColorSwatch
+import com.meet.compose.loaders.ui.common.DynamicCustomColorSwatch
+import com.meet.compose.loaders.ui.studio.components.GridSizeOptionButton
+import com.meet.compose.loaders.ui.studio.components.OptionBadge
 
 enum class ExportFormat { KOTLIN_CODE, SVG_VECTOR }
+enum class ColorPickerTarget { ON_COLOR, OFF_COLOR, CANVAS_BG }
 
 private fun Color.toHexString(): String {
     val r = (red * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
@@ -306,7 +309,7 @@ fun StudioDetailScreen(
                                 listOf(primaryColor, Color(0xFF6366F1), Color(0xFF10B981)).forEach { c ->
                                     ColorSwatch(color = c, isSelected = selectedActiveColor == c) { selectedActiveColor = c }
                                 }
-                                StudioDynamicCustomColorSwatch(
+                                DynamicCustomColorSwatch(
                                     customColor = customActiveColor,
                                     isSelected = selectedActiveColor == customActiveColor && customActiveColor != null,
                                     outlineColor = outlineColor,
@@ -324,7 +327,7 @@ fun StudioDetailScreen(
                                 listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7)).forEach { c ->
                                     ColorSwatch(color = c, isSelected = selectedInactiveColor == c) { selectedInactiveColor = c }
                                 }
-                                StudioDynamicCustomColorSwatch(
+                                DynamicCustomColorSwatch(
                                     customColor = customInactiveColor,
                                     isSelected = selectedInactiveColor == customInactiveColor && customInactiveColor != null,
                                     outlineColor = outlineColor,
@@ -342,7 +345,7 @@ fun StudioDetailScreen(
                                 listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A)).forEach { c ->
                                     ColorSwatch(color = c, isSelected = selectedCanvasBgColor == c) { selectedCanvasBgColor = c }
                                 }
-                                StudioDynamicCustomColorSwatch(
+                                DynamicCustomColorSwatch(
                                     customColor = customCanvasBgColor,
                                     isSelected = selectedCanvasBgColor == customCanvasBgColor && customCanvasBgColor != null,
                                     outlineColor = outlineColor,
@@ -543,7 +546,7 @@ fun StudioDetailScreen(
                                 listOf(primaryColor, Color(0xFF6366F1), Color(0xFF10B981)).forEach { c ->
                                     ColorSwatch(color = c, isSelected = selectedActiveColor == c) { selectedActiveColor = c }
                                 }
-                                StudioDynamicCustomColorSwatch(
+                                DynamicCustomColorSwatch(
                                     customColor = customActiveColor,
                                     isSelected = selectedActiveColor == customActiveColor && customActiveColor != null,
                                     outlineColor = outlineColor,
@@ -561,7 +564,7 @@ fun StudioDetailScreen(
                                 listOf(outlineColor, Color(0xFF18181B), Color(0xFFE4E4E7)).forEach { c ->
                                     ColorSwatch(color = c, isSelected = selectedInactiveColor == c) { selectedInactiveColor = c }
                                 }
-                                StudioDynamicCustomColorSwatch(
+                                DynamicCustomColorSwatch(
                                     customColor = customInactiveColor,
                                     isSelected = selectedInactiveColor == customInactiveColor && customInactiveColor != null,
                                     outlineColor = outlineColor,
@@ -579,7 +582,7 @@ fun StudioDetailScreen(
                                 listOf(defaultCanvasBg, Color(0xFF000000), Color(0xFF0F172A)).forEach { c ->
                                     ColorSwatch(color = c, isSelected = selectedCanvasBgColor == c) { selectedCanvasBgColor = c }
                                 }
-                                StudioDynamicCustomColorSwatch(
+                                DynamicCustomColorSwatch(
                                     customColor = customCanvasBgColor,
                                     isSelected = selectedCanvasBgColor == customCanvasBgColor && customCanvasBgColor != null,
                                     outlineColor = outlineColor,
@@ -692,126 +695,5 @@ fun StudioDetailScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun StudioDynamicCustomColorSwatch(
-    customColor: Color?,
-    isSelected: Boolean,
-    outlineColor: Color,
-    onSelect: () -> Unit,
-    onEdit: () -> Unit
-) {
-    if (customColor == null) {
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .border(1.dp, outlineColor, CircleShape)
-                .clickable(onClick = onEdit),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add Custom Color",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-    } else {
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(CircleShape)
-                .background(customColor)
-                .border(
-                    width = if (isSelected) 2.dp else 1.dp,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else outlineColor,
-                    shape = CircleShape
-                )
-                .clickable(onClick = onSelect),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(onClick = onEdit)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Custom Color",
-                    tint = if (customColor == Color.White) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.size(12.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun GridSizeOptionButton(
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = label,
-            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-private fun ColorSwatch(
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(28.dp)
-            .clip(CircleShape)
-            .background(color)
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                shape = CircleShape
-            )
-            .clickable(onClick = onClick)
-    )
-}
-
-@Composable
-private fun OptionBadge(
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    ) {
-        Text(
-            text = label,
-            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
-        )
     }
 }
