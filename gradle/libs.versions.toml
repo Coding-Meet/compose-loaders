@@ -18,7 +18,7 @@ kotlinx-serialization = "1.11.0"
 material3 = "1.11.0-alpha07"
 materialIcons = "1.7.3"
 navigationCompose = "2.9.2"
-vanniktechMavenPublish = "0.30.0"
+vanniktechMavenPublish = "0.37.0"
 
 
 [libraries]

@@ -56,7 +56,8 @@ kotlin {
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
-    coordinates("com.meet.compose", "loaders", "1.0.0")
+    coordinates("io.github.coding-meet", "compose-loaders", "1.0.0")
+
 
     pom {
         name = "Compose Loaders"
