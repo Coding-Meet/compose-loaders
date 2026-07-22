@@ -1,6 +1,7 @@
 package com.meet.compose.loaders.export
 
 import com.meet.compose.loaders.model.PixelAnimation
+import com.meet.compose.loaders.model.PixelShape
 
 /**
  * Public exporter utility to convert pixel animation frame grids into SVG format.
@@ -15,7 +16,8 @@ object SvgExporter {
         frameIndex: Int = 0,
         activeHex: String = "#6366F1",
         inactiveHex: String = "#E4E4E7",
-        canvasSize: Int = 200
+        canvasSize: Int = 200,
+        shape: PixelShape = PixelShape.Circle
     ): String {
         val columns = animation.columns
         val rows = animation.rows
@@ -24,6 +26,7 @@ object SvgExporter {
 
         val cellSize = canvasSize.toFloat() / columns
         val radius = cellSize * 0.38f
+        val rectSize = cellSize * 0.76f
 
         val sb = StringBuilder()
         sb.append("""<svg xmlns="http://www.w3.org/2000/svg" width="$canvasSize" height="$canvasSize" viewBox="0 0 $canvasSize $canvasSize">""")
@@ -36,7 +39,22 @@ object SvgExporter {
                 val cx = (c + 0.5f) * cellSize
                 val cy = (r + 0.5f) * cellSize
 
-                sb.append("""  <circle cx="$cx" cy="$cy" r="$radius" fill="$fill" />""").append("\n")
+                when (shape) {
+                    PixelShape.Circle -> {
+                        sb.append("""  <circle cx="$cx" cy="$cy" r="$radius" fill="$fill" />""").append("\n")
+                    }
+                    PixelShape.Square -> {
+                        val x = cx - rectSize / 2
+                        val y = cy - rectSize / 2
+                        sb.append("""  <rect x="$x" y="$y" width="$rectSize" height="$rectSize" fill="$fill" />""").append("\n")
+                    }
+                    PixelShape.RoundedSquare -> {
+                        val x = cx - rectSize / 2
+                        val y = cy - rectSize / 2
+                        val rx = rectSize * 0.2f
+                        sb.append("""  <rect x="$x" y="$y" width="$rectSize" height="$rectSize" rx="$rx" ry="$rx" fill="$fill" />""").append("\n")
+                    }
+                }
             }
         }
 
@@ -52,7 +70,8 @@ object SvgExporter {
         activeHex: String = "#6366F1",
         inactiveHex: String = "#E4E4E7",
         canvasSize: Int = 200,
-        speedMultiplier: Float = 1.0f
+        speedMultiplier: Float = 1.0f,
+        shape: PixelShape = PixelShape.Circle
     ): String {
         val columns = animation.columns
         val rows = animation.rows
@@ -63,6 +82,7 @@ object SvgExporter {
         val totalDurationSeconds = (totalFrames * animation.frameDurationMillis) / (1000f * safeSpeed)
         val cellSize = canvasSize.toFloat() / columns
         val radius = cellSize * 0.38f
+        val rectSize = cellSize * 0.76f
 
         val sb = StringBuilder()
         sb.append("""<svg xmlns="http://www.w3.org/2000/svg" width="$canvasSize" height="$canvasSize" viewBox="0 0 $canvasSize $canvasSize">""")
@@ -100,7 +120,23 @@ object SvgExporter {
                 val fill = if (isActive) activeHex else inactiveHex
                 val cx = (c + 0.5f) * cellSize
                 val cy = (r + 0.5f) * cellSize
-                sb.append("""  <circle id="dot_${c}_${r}" cx="$cx" cy="$cy" r="$radius" fill="$fill" />""").append("\n")
+
+                when (shape) {
+                    PixelShape.Circle -> {
+                        sb.append("""  <circle id="dot_${c}_${r}" cx="$cx" cy="$cy" r="$radius" fill="$fill" />""").append("\n")
+                    }
+                    PixelShape.Square -> {
+                        val x = cx - rectSize / 2
+                        val y = cy - rectSize / 2
+                        sb.append("""  <rect id="dot_${c}_${r}" x="$x" y="$y" width="$rectSize" height="$rectSize" fill="$fill" />""").append("\n")
+                    }
+                    PixelShape.RoundedSquare -> {
+                        val x = cx - rectSize / 2
+                        val y = cy - rectSize / 2
+                        val rx = rectSize * 0.2f
+                        sb.append("""  <rect id="dot_${c}_${r}" x="$x" y="$y" width="$rectSize" height="$rectSize" rx="$rx" ry="$rx" fill="$fill" />""").append("\n")
+                    }
+                }
             }
         }
 

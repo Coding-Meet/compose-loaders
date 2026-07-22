@@ -225,7 +225,7 @@ com.meet.compose.loaders
 
 ## 📂 Showcase App UI Architecture
 
-The showcase app within the `:shared` module is structured cleanly into screen-specific feature subfolders and common shared widgets:
+The showcase app within the `:shared` module is structured cleanly into screen-specific feature subfolders following an MVI architecture:
 
 ```
 shared/src/commonMain/kotlin/com/meet/compose/loaders/ui
@@ -236,14 +236,18 @@ shared/src/commonMain/kotlin/com/meet/compose/loaders/ui
 │   ├── ColorSwatch.kt              # Grid pixel color selection swatch
 │   └── DynamicCustomColorSwatch.kt # Advanced customizable color swatch
 │
-├── gallery/                        # Gallery Screen & components
+├── gallery/                        # Gallery Screen feature folder
+│   ├── GalleryContract.kt          # MVI contracts (UiState, Intent) for Gallery
 │   ├── GalleryScreen.kt            # Showcase grid of all preset loaders
+│   ├── GalleryViewModel.kt         # MVI ViewModel managing Gallery State
 │   └── components/
 │       ├── FilterChip.kt           # Speed control multiplier toggles
 │       └── PresetGalleryCard.kt    # Individual loader card preview
 │
-└── studio/                         # Studio Detail workspace screen
+└── studio/                         # Studio Detail workspace screen feature folder
+    ├── StudioDetailContract.kt     # MVI contracts (UiState, Intent) for Studio
     ├── StudioDetailScreen.kt       # Live customization & code/SVG export panel
+    ├── StudioDetailViewModel.kt    # MVI ViewModel managing Studio Detail State
     └── components/
         ├── GridSizeOptionButton.kt # Resolution grid sizes toggles (5×5 / 7×7)
         └── OptionBadge.kt          # Badges for size & speed option buttons
