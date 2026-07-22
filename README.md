@@ -227,10 +227,10 @@ com.meet.compose.loaders
 
 Run demo applications across platforms using Gradle commands:
 
-- **Android App**: `./gradlew :androidApp:assembleDebug`
-- **Desktop (JVM)**: `./gradlew :desktopApp:run`
-- **Web (Wasm)**: `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-- **Web (JS)**: `./gradlew :webApp:jsBrowserDevelopmentRun`
+- **Android App**: `./gradlew :samples:androidApp:assembleDebug`
+- **Desktop (JVM)**: `./gradlew :samples:desktopApp:run`
+- **Web (Wasm)**: `./gradlew :samples:webApp:wasmJsBrowserDevelopmentRun`
+- **Web (JS)**: `./gradlew :samples:webApp:jsBrowserDevelopmentRun`
 
 ---
 
