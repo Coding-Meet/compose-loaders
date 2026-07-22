@@ -54,6 +54,7 @@ import com.meet.compose.loaders.export.CodeExporter
 import com.meet.compose.loaders.export.SvgExporter
 import com.meet.compose.loaders.model.PixelGridSize
 import com.meet.compose.loaders.model.PixelPreset
+import com.meet.compose.loaders.model.PixelShape
 import com.meet.compose.loaders.ui.common.ColorPickerDialog
 import com.meet.compose.loaders.ui.common.ColorSwatch
 import com.meet.compose.loaders.ui.common.DynamicCustomColorSwatch
@@ -95,6 +96,7 @@ fun StudioDetailScreen(
 
     var loaderSize by remember { mutableStateOf(48.dp) }
     var speedMultiplier by remember { mutableStateOf(1.0f) }
+    var selectedPixelShape by remember { mutableStateOf(PixelShape.Circle) }
     var isPlaying by remember { mutableStateOf(true) }
     var exportFormat by remember { mutableStateOf(ExportFormat.KOTLIN_CODE) }
 
@@ -225,12 +227,13 @@ fun StudioDetailScreen(
             val isCompact = maxWidth < 600.dp
 
             val currentAnimation = preset.selectAnimation(selectedGridSize)
-            val generatedCode = CodeExporter.generateCode(preset, selectedGridSize, loaderSize.value.toInt(), speedMultiplier)
+            val generatedCode = CodeExporter.generateCode(preset, selectedGridSize, loaderSize.value.toInt(), speedMultiplier, selectedPixelShape)
             val generatedSvg = SvgExporter.exportAnimatedSvg(
                 animation = currentAnimation,
                 activeHex = selectedActiveColor.toHexString(),
                 inactiveHex = selectedInactiveColor.toHexString(),
-                speedMultiplier = speedMultiplier
+                speedMultiplier = speedMultiplier,
+                shape = selectedPixelShape
             )
             val activeExportText = if (exportFormat == ExportFormat.KOTLIN_CODE) generatedCode else generatedSvg
 
@@ -275,6 +278,7 @@ fun StudioDetailScreen(
                                 modifier = Modifier.size(loaderSize),
                                 color = selectedActiveColor,
                                 inactiveColor = selectedInactiveColor,
+                                shape = selectedPixelShape,
                                 speedMultiplier = if (isPlaying) speedMultiplier else 0.001f
                             )
                         }
@@ -390,6 +394,17 @@ fun StudioDetailScreen(
                                 listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { spd ->
                                     OptionBadge(label = "${spd}x", isSelected = speedMultiplier == spd) { speedMultiplier = spd }
                                 }
+                            }
+                        }
+
+                        // Shape
+                        Column {
+                            Text("Pixel Shape", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OptionBadge(label = "Circle", isSelected = selectedPixelShape == PixelShape.Circle) { selectedPixelShape = PixelShape.Circle }
+                                OptionBadge(label = "Square", isSelected = selectedPixelShape == PixelShape.Square) { selectedPixelShape = PixelShape.Square }
+                                OptionBadge(label = "Rounded", isSelected = selectedPixelShape == PixelShape.RoundedSquare) { selectedPixelShape = PixelShape.RoundedSquare }
                             }
                         }
 
@@ -604,6 +619,7 @@ fun StudioDetailScreen(
                                 modifier = Modifier.size(loaderSize),
                                 color = selectedActiveColor,
                                 inactiveColor = selectedInactiveColor,
+                                shape = selectedPixelShape,
                                 speedMultiplier = if (isPlaying) speedMultiplier else 0.001f
                             )
                         }
@@ -720,6 +736,17 @@ fun StudioDetailScreen(
                                 listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { spd ->
                                     OptionBadge(label = "${spd}x", isSelected = speedMultiplier == spd) { speedMultiplier = spd }
                                 }
+                            }
+                        }
+
+                        // Shape
+                        Column {
+                            Text("Pixel Shape", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OptionBadge(label = "Circle", isSelected = selectedPixelShape == PixelShape.Circle) { selectedPixelShape = PixelShape.Circle }
+                                OptionBadge(label = "Square", isSelected = selectedPixelShape == PixelShape.Square) { selectedPixelShape = PixelShape.Square }
+                                OptionBadge(label = "Rounded", isSelected = selectedPixelShape == PixelShape.RoundedSquare) { selectedPixelShape = PixelShape.RoundedSquare }
                             }
                         }
 

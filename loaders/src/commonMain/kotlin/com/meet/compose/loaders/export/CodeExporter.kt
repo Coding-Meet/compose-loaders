@@ -2,6 +2,7 @@ package com.meet.compose.loaders.export
 
 import com.meet.compose.loaders.model.PixelGridSize
 import com.meet.compose.loaders.model.PixelPreset
+import com.meet.compose.loaders.model.PixelShape
 
 /**
  * Public code generator utility to format standalone Kotlin Compose code.
@@ -12,7 +13,8 @@ object CodeExporter {
         preset: PixelPreset,
         gridSize: PixelGridSize,
         sizeDp: Int = 48,
-        speedMultiplier: Float = 1.0f
+        speedMultiplier: Float = 1.0f,
+        shape: PixelShape = PixelShape.Circle
     ): String {
         val sizeName = when (gridSize) {
             PixelGridSize.Grid5x5 -> "Grid5x5"
@@ -25,6 +27,7 @@ PixelLoader(
     preset = PixelPresets.${preset.name},
     gridSize = PixelGridSize.$sizeName,
     modifier = Modifier.size(${sizeDp}.dp),
+    shape = PixelShape.${shape.name},
     speedMultiplier = ${speedMultiplier}f
 )
         """.trimIndent()
