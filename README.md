@@ -3,16 +3,16 @@
 [![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF.svg?logo=kotlin)](https://kotlinlang.org/docs/multiplatform.html)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose-Multiplatform-blue.svg?logo=jetbrains)](https://www.jetbrains.com/lp/compose-multiplatform/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Maven Central](https://img.shields.io/maven-central/v/com.meet.compose/loaders.svg?label=Maven%20Central)](https://search.maven.org/artifact/com.meet.compose/loaders)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-0A84FF?style=flat&logo=googlechrome&logoColor=white)](https://coding-meet.github.io/compose-loaders/)
 
-**Compose Loaders** is a lightweight, customizable, open-source **Compose Multiplatform (KMP)** library featuring **31 handcrafted pixel loading animations** across Android, iOS, Desktop (JVM), and Web (Wasm/JS).
-
-🌐 **Live Interactive Demo**: [coding-meet.github.io/compose-loaders](https://coding-meet.github.io/compose-loaders/)
+**Compose Loaders** is a lightweight, customizable, open-source **Compose Multiplatform (KMP)** library with a growing collection of handcrafted pixel loading animations across Android, iOS, Desktop (JVM), and Web (Wasm/JS).
 
 ---
 
 ## 🚀 Key Features
 
-- 💎 **31 Handcrafted Animations**: Pixel-perfect loading animations designed in 5×5 and 7×7 dot matrix grids.
+- 💎 **Handcrafted Pixel Animations**: Pixel-perfect loading animations designed in 5×5 and 7×7 dot matrix grids.
 - 🌐 **100% Compose Multiplatform**: Pure Kotlin implementation in `commonMain` for Android, iOS, Desktop, and Web.
 - ⚡ **Hardware Accelerated Rendering**: High-performance canvas drawing using Compose `DrawScope`.
 - 🎨 **Deep Customization**: Customize active pixel colors, inactive pixel colors, canvas background, speed multiplier (`0.5x` - `2.0x`), dot size, and pixel shapes (`Circle`, `Square`, `RoundedSquare`).
@@ -181,7 +181,7 @@ val animatedSvg = SvgExporter.exportAnimatedSvg(
 
 ---
 
-## 🎨 Catalog of 31 Preset Loaders
+## 🎨 Preset Loaders Catalog
 
 | Category | Presets |
 | :--- | :--- |
@@ -196,61 +196,29 @@ val animatedSvg = SvgExporter.exportAnimatedSvg(
 
 ```
 com.meet.compose.loaders
-├── PixelLoader.kt                    [PUBLIC] Core Composable entry point
+├── PixelLoader.kt                    **[PUBLIC]** Core Composable entry point
 │
-├── model/                            [PUBLIC] Immutable Data Contracts
-│   ├── PixelAnimation.kt             [PUBLIC] Frame sequence & timing specifier
-│   ├── PixelGrid.kt                  [PUBLIC] 2D matrix boolean array wrapper
-│   ├── PixelGridSize.kt              [PUBLIC] Sealed interface: Grid5x5, Grid7x7, Custom
-│   ├── PixelPreset.kt                [PUBLIC] Data class for presets
-│   ├── PixelColorConfig.kt           [PUBLIC] Color palette specifier
-│   └── PixelShape.kt                 [PUBLIC] Dot geometry enum
+├── model/                            **[PUBLIC]** Immutable Data Contracts
+│   ├── PixelAnimation.kt             **[PUBLIC]** Frame sequence & timing specifier
+│   ├── PixelGrid.kt                  **[PUBLIC]** 2D matrix boolean array wrapper
+│   ├── PixelGridSize.kt              **[PUBLIC]** Sealed interface: Grid5x5, Grid7x7, Custom
+│   ├── PixelPreset.kt                **[PUBLIC]** Data class for presets
+│   ├── PixelColorConfig.kt           **[PUBLIC]** Color palette specifier
+│   └── PixelShape.kt                 **[PUBLIC]** Dot geometry enum
 │
-├── presets/                          [PUBLIC & INTERNAL] Presets Catalog Registry
-│   ├── PixelPresets.kt               [PUBLIC] Entry point exposing `val all: List<PixelPreset>`
-│   └── internal/                     [INTERNAL] Categorized lazy preset stores
+├── presets/                          **[PUBLIC & INTERNAL]** Presets Catalog Registry
+│   ├── PixelPresets.kt               **[PUBLIC]** Entry point exposing `val all: List<PixelPreset>`
+│   └── internal/                     **[INTERNAL]** Categorized lazy preset stores
 │
-├── engine/internal/                  [INTERNAL] Internal Engine Components
-│   └── GridMath.kt                   [INTERNAL] Layout & coordinate math
+├── engine/internal/                  **[INTERNAL]** Internal Engine Components
+│   └── GridMath.kt                   **[INTERNAL]** Layout & coordinate math
 │
-├── render/internal/                  [INTERNAL] Hardware Graphics Pipeline
-│   └── PixelCanvasRenderer.kt        [INTERNAL] Compose DrawScope canvas renderer
+├── render/internal/                  **[INTERNAL]** Hardware Graphics Pipeline
+│   └── PixelCanvasRenderer.kt        **[INTERNAL]** Compose DrawScope canvas renderer
 │
-└── export/                           [PUBLIC] Exporter Utilities
-    ├── SvgExporter.kt                [PUBLIC] Vector SVG exporter
-    └── CodeExporter.kt               [PUBLIC] Standalone Compose code generator
-```
-
----
-
-## 📂 Showcase App UI Architecture
-
-The showcase app within the `:shared` module is structured cleanly into screen-specific feature subfolders following an MVI architecture:
-
-```
-shared/src/commonMain/kotlin/com/meet/compose/loaders/ui
-├── App.kt                          # Main App layout and Navigation
-│
-├── common/                         # Shared UI Components across screens
-│   ├── ColorPickerDialog.kt        # Color selection picker dialog
-│   ├── ColorSwatch.kt              # Grid pixel color selection swatch
-│   └── DynamicCustomColorSwatch.kt # Advanced customizable color swatch
-│
-├── gallery/                        # Gallery Screen feature folder
-│   ├── GalleryContract.kt          # MVI contracts (UiState, Intent) for Gallery
-│   ├── GalleryScreen.kt            # Showcase grid of all preset loaders
-│   ├── GalleryViewModel.kt         # MVI ViewModel managing Gallery State
-│   └── components/
-│       ├── FilterChip.kt           # Speed control multiplier toggles
-│       └── PresetGalleryCard.kt    # Individual loader card preview
-│
-└── studio/                         # Studio Detail workspace screen feature folder
-    ├── StudioDetailContract.kt     # MVI contracts (UiState, Intent) for Studio
-    ├── StudioDetailScreen.kt       # Live customization & code/SVG export panel
-    ├── StudioDetailViewModel.kt    # MVI ViewModel managing Studio Detail State
-    └── components/
-        ├── GridSizeOptionButton.kt # Resolution grid sizes toggles (5×5 / 7×7)
-        └── OptionBadge.kt          # Badges for size & speed option buttons
+└── export/                           **[PUBLIC]** Exporter Utilities
+    ├── SvgExporter.kt                **[PUBLIC]** Vector SVG exporter
+    └── CodeExporter.kt               **[PUBLIC]** Standalone Compose code generator
 ```
 
 ---
@@ -278,7 +246,10 @@ It is **not affiliated with, endorsed by, or maintained by the Flicker project o
 
 ## 👨‍💻 Author
 
-Built with ❤️ by **Meet** — [codingmeet.com](https://codingmeet.com/)
+Built with ❤️ by **Meet**
+
+- 🌐 [codingmeet.com](https://codingmeet.com/)
+- 🐙 [github.com/Coding-Meet](https://github.com/Coding-Meet)
 
 ---
 
