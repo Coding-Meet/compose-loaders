@@ -31,4 +31,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: webApp/build/dist/wasmJs/productionExecutable
+          folder: samples/webApp/build/dist/wasmJs/productionExecutable

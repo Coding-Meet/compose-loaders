@@ -18,6 +18,8 @@ kotlinx-serialization = "1.11.0"
 material3 = "1.11.0-alpha07"
 materialIcons = "1.7.3"
 navigationCompose = "2.9.2"
+vanniktechMavenPublish = "0.30.0"
+
 
 [libraries]
 androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
@@ -51,3 +53,4 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
