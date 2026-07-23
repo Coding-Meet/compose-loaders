@@ -61,7 +61,8 @@ mavenPublishing {
 
     pom {
         name = "Compose Loaders"
-        description = "A growing collection of handcrafted pixel loading animations for Compose Multiplatform."
+        description =
+            "A growing collection of handcrafted pixel loading animations for Compose Multiplatform."
         inceptionYear = "2026"
         url = "https://github.com/Coding-Meet/compose-loaders"
         licenses {
@@ -75,6 +76,10 @@ mavenPublishing {
             developer {
                 id = "Coding-Meet"
                 name = "Meet"
+                email = "meetb2602@gmail.com"
+                organization = "Coding Meet"
+                organizationUrl = "https://codingmeet.com"
+
                 url = "https://github.com/Coding-Meet"
             }
         }
