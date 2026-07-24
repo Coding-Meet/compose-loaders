@@ -21,9 +21,17 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":samples:shared"))
-
-
             implementation(libs.compose.ui)
+        }
+
+        val jsMain by getting {
+            kotlin.srcDirs("src/webMain/kotlin")
+            resources.srcDirs("src/webMain/resources")
+        }
+
+        val wasmJsMain by getting {
+            kotlin.srcDirs("src/webMain/kotlin")
+            resources.srcDirs("src/webMain/resources")
         }
     }
 }
