@@ -39,7 +39,7 @@ Add the dependency to your multiplatform module's `build.gradle.kts`:
 ```kotlin
 commonMain.dependencies {
     // Core Compose Loaders Library
-    implementation("io.github.coding-meet:compose-loaders:1.0.0")
+    implementation("io.github.coding-meet:compose-loaders:1.0.1")
 }
 ```
 
