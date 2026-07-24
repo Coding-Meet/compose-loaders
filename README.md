@@ -43,6 +43,10 @@ commonMain.dependencies {
 }
 ```
 
+> [!IMPORTANT]
+> **Kotlin 2.0.0+ Requirement**
+> This library is compiled with **Kotlin 2.0.21**. Your consuming project must use **Kotlin 2.0.0 or higher** to prevent metadata binary compatibility errors (e.g. `Class '...' was compiled with an incompatible version of Kotlin`).
+
 Or reference the local project module:
 
 ```kotlin
